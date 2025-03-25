@@ -16,6 +16,7 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 interface SidebarProps {
   user: User;
@@ -33,7 +34,10 @@ function NavItem({ icon, label, href, active }: NavItemProps) {
     <Link href={href}>
       <Button
         variant={active ? "secondary" : "ghost"}
-        className="w-full justify-start"
+        className={cn(
+          "w-full justify-start transition-all",
+          active && "border-2 border-primary bg-primary/10 text-primary hover:bg-primary/20"
+        )}
       >
         {icon}
         <span className="ml-2">{label}</span>

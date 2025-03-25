@@ -10,6 +10,7 @@ interface StatsCardProps {
   icon?: React.ReactNode;
   className?: string;
   children?: React.ReactNode;
+  onClick?: () => void;
 }
 
 export function StatsCard({
@@ -20,9 +21,24 @@ export function StatsCard({
   icon,
   className,
   children,
+  onClick,
 }: StatsCardProps) {
   return (
-    <Card className={cn("overflow-hidden", className)}>
+    <Card 
+      className={cn(
+        "overflow-hidden transition-all duration-200 cursor-pointer hover:scale-[1.02] hover:shadow-lg hover:border-primary/50", 
+        className
+      )}
+      onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick?.();
+        }
+      }}
+    >
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-lg font-semibold">{title}</h3>

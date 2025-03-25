@@ -44,6 +44,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useTranslate } from "@/hooks/use-translate";
 
 export interface Medicine {
   id: number;
@@ -99,6 +100,7 @@ export function InventoryTable({ medicines, categories, onUpdate }: InventoryTab
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isStockDialogOpen, setIsStockDialogOpen] = useState(false);
   const { toast } = useToast();
+  const { t } = useTranslate();
 
   // Form for adding/editing medicine
   const form = useForm<MedicineFormValues>({
@@ -229,7 +231,7 @@ export function InventoryTable({ medicines, categories, onUpdate }: InventoryTab
   // Delete medicine
   const handleDeleteMedicine = async (id: number) => {
     try {
-      await apiRequest("DELETE", `/api/medicines/${id}`, undefined);
+      await apiRequest("DELETE", `/api/medicines/${id}`);
       
       toast({
         title: "Medicine deleted",
@@ -281,60 +283,48 @@ export function InventoryTable({ medicines, categories, onUpdate }: InventoryTab
   const columns = [
     {
       key: "name",
-      header: "Medicine Name",
-      cell: (row: Medicine) => (
-        <div>
-          <div className="font-medium">{row.name}</div>
-          <div className="text-sm text-muted-foreground">{row.description}</div>
-        </div>
-      ),
+      header: t("inventory.name"),
+      cell: (medicine: Medicine) => medicine.name,
       sortable: true,
     },
     {
+      key: "description",
+      header: t("inventory.description"),
+      cell: (medicine: Medicine) => medicine.description,
+    },
+    {
       key: "category",
-      header: "Category",
-      cell: (row: Medicine) => (
-        <div>
-          {categories.find(c => c.id === row.category_id)?.name || "Unknown"}
-        </div>
-      ),
+      header: t("inventory.category"),
+      cell: (medicine: Medicine) => categories.find(c => c.id === medicine.category_id)?.name || "Unknown",
       sortable: true,
     },
     {
       key: "batch",
-      header: "Batch",
-      cell: (row: Medicine) => <div>{row.batchNumber}</div>,
+      header: t("inventory.batch"),
+      cell: (medicine: Medicine) => medicine.batchNumber,
     },
     {
       key: "expiry",
-      header: "Expiry",
-      cell: (row: Medicine) => (
-        <div className={
-          isExpired(row.expiryDate) 
-            ? "text-red-600 dark:text-red-400"
-            : isExpiringSoon(row.expiryDate)
-              ? "text-amber-600 dark:text-amber-400"
-              : ""
-        }>
-          {formatDate(row.expiryDate)}
-        </div>
-      ),
-      sortable: true,
+      header: t("inventory.expiry"),
+      cell: (medicine: Medicine) => {
+        const date = new Date(medicine.expiryDate);
+        return date.toLocaleDateString();
+      },
     },
     {
       key: "stock",
-      header: "Stock",
-      cell: (row: Medicine) => {
-        const status = getStockStatus(row.stock, row.lowStockThreshold);
+      header: t("inventory.stock"),
+      cell: (medicine: Medicine) => {
+        const status = getStockStatus(medicine.stock, medicine.lowStockThreshold);
         return (
           <div className="text-sm font-medium">
             <Button 
               variant="ghost" 
               className="p-0 h-auto"
-              onClick={() => handleStockAdjustment(row)}
+              onClick={() => handleStockAdjustment(medicine)}
             >
               <BadgeStatus status={status.status as any}>
-                {row.stock} Units
+                {medicine.stock} Units
               </BadgeStatus>
             </Button>
           </div>
@@ -344,46 +334,50 @@ export function InventoryTable({ medicines, categories, onUpdate }: InventoryTab
     },
     {
       key: "mrp",
-      header: "MRP",
-      cell: (row: Medicine) => <div>₹{parseFloat(row.mrp).toFixed(2)}</div>,
+      header: t("inventory.mrp"),
+      cell: (medicine: Medicine) => `₹${parseFloat(medicine.mrp).toFixed(2)}`,
       sortable: true,
     },
     {
       key: "actions",
-      header: "Actions",
-      cell: (row: Medicine) => (
-        <div className="flex justify-end space-x-2">
+      header: t("common.actions"),
+      cell: (medicine: Medicine) => (
+        <div className="flex items-center gap-2">
           <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => handleEditMedicine(row)}
+            variant="outline"
+            size="sm"
+            onClick={() => handleEditMedicine(medicine)}
           >
-            <Edit className="h-4 w-4" />
+            {t("common.edit")}
           </Button>
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button
-                variant="ghost"
-                size="icon"
-                className="text-destructive hover:text-destructive/90"
+                variant="destructive"
+                size="sm"
+                disabled={selectedMedicine?.id === medicine.id}
               >
-                <Trash2 className="h-4 w-4" />
+                {selectedMedicine?.id === medicine.id ? (
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
+                ) : (
+                  t("common.delete")
+                )}
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                <AlertDialogTitle>{t("inventory.deleteConfirmTitle")}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete the medicine
-                  from the inventory.
+                  {t("inventory.deleteConfirmDescription", { name: medicine.name })}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
                 <AlertDialogAction
-                  onClick={() => handleDeleteMedicine(row.id)}
+                  onClick={() => handleDeleteMedicine(medicine.id)}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                 >
-                  Delete
+                  {t("common.delete")}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
@@ -538,7 +532,7 @@ export function InventoryTable({ medicines, categories, onUpdate }: InventoryTab
                 />
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-3 gap-4">
                 <FormField
                   control={form.control}
                   name="stock"

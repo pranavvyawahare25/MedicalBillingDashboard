@@ -28,8 +28,13 @@ import {
   YAxis,
   Legend
 } from "recharts";
+import { useLocation } from "wouter";
 
 export default function Reports() {
+  const [location] = useLocation();
+  const searchParams = new URLSearchParams(location.split('?')[1]);
+  const defaultTab = searchParams.get('tab') || 'sales';
+  
   const [dateRange, setDateRange] = useState("week");
   const [gstPeriod, setGstPeriod] = useState("month");
   const { toast } = useToast();
@@ -225,44 +230,37 @@ export default function Reports() {
   // Calculate total sales for the selected period
   const totalSales = salesChartData.reduce((sum, day) => sum + day.sales, 0);
 
-  // Colors for pie chart and other graphs
-  const COLORS = [
-    'hsl(var(--primary))',
-    'hsl(var(--secondary))',
-    'hsl(var(--accent))',
-    'hsl(var(--destructive))',
-    'hsl(var(--muted))',
-    'hsl(var(--card))',
-    'hsl(var(--popover))',
-    'hsl(var(--border))',
-    'hsl(var(--input))',
-    'hsl(var(--ring))'
-  ];
-
-  // Additional colors for specific charts
+  // Colors for charts
   const CHART_COLORS = {
-    sales: {
-      line: 'hsl(var(--primary))',
-      bar: 'hsl(var(--secondary))',
-      area: 'hsl(var(--accent))'
-    },
-    gst: {
-      cgst: 'hsl(var(--primary))',
-      sgst: 'hsl(var(--secondary))',
-      igst: 'hsl(var(--accent))'
-    },
-    inventory: {
-      value: 'hsl(var(--primary))',
-      purchases: 'hsl(var(--secondary))',
-      sales: 'hsl(var(--accent))'
-    }
+    primary: 'hsl(230, 85%, 60%)',
+    secondary: 'hsl(280, 75%, 60%)',
+    tertiary: 'hsl(330, 85%, 60%)',
+    success: 'hsl(160, 85%, 45%)',
+    warning: 'hsl(40, 95%, 55%)',
+    error: 'hsl(0, 85%, 60%)',
+    info: 'hsl(200, 85%, 60%)',
+    purple: 'hsl(270, 85%, 60%)',
+    teal: 'hsl(180, 75%, 45%)',
+    orange: 'hsl(20, 85%, 55%)'
   };
+
+  // Colors for pie chart
+  const COLORS = [
+    CHART_COLORS.primary,
+    CHART_COLORS.secondary,
+    CHART_COLORS.tertiary,
+    CHART_COLORS.success,
+    CHART_COLORS.warning,
+    CHART_COLORS.info,
+    CHART_COLORS.purple,
+    CHART_COLORS.teal
+  ];
 
   return (
     <div className="p-4 md:p-6">
       <h2 className="text-2xl font-bold mb-6">Reports & Analytics</h2>
 
-      <Tabs defaultValue="sales">
+      <Tabs defaultValue={defaultTab}>
         <TabsList className="mb-4">
           <TabsTrigger value="sales">Sales Reports</TabsTrigger>
           <TabsTrigger value="gst">GST Reports</TabsTrigger>
@@ -383,9 +381,9 @@ export default function Reports() {
                       <Line 
                         type="monotone" 
                         dataKey="sales" 
-                        stroke={CHART_COLORS.sales.line}
+                        stroke={CHART_COLORS.primary}
                         strokeWidth={2} 
-                        activeDot={{ r: 6, fill: CHART_COLORS.sales.line }} 
+                        activeDot={{ r: 6, fill: CHART_COLORS.primary }} 
                       />
                     </LineChart>
                   </ResponsiveContainer>
@@ -557,8 +555,8 @@ export default function Reports() {
                     <Legend 
                       formatter={(value) => <span style={{ color: 'hsl(var(--foreground))' }}>{value}</span>}
                     />
-                    <Bar dataKey="cgst" name="CGST" fill={CHART_COLORS.gst.cgst} radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="sgst" name="SGST" fill={CHART_COLORS.gst.sgst} radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="cgst" name="CGST" fill={CHART_COLORS.primary} radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="sgst" name="SGST" fill={CHART_COLORS.secondary} radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -685,7 +683,7 @@ export default function Reports() {
                         labelStyle={{ color: 'hsl(var(--foreground))' }}
                         itemStyle={{ color: 'hsl(var(--foreground))' }}
                       />
-                      <Bar dataKey="value" name="Inventory Value" fill={CHART_COLORS.inventory.value} radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="value" name="Inventory Value" fill={CHART_COLORS.primary} radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -743,17 +741,17 @@ export default function Reports() {
                         type="monotone"
                         dataKey="purchases"
                         name="Purchases"
-                        stroke={CHART_COLORS.inventory.purchases}
+                        stroke={CHART_COLORS.success}
                         strokeWidth={2}
-                        activeDot={{ r: 6, fill: CHART_COLORS.inventory.purchases }}
+                        activeDot={{ r: 6, fill: CHART_COLORS.success }}
                       />
                       <Line
                         type="monotone"
                         dataKey="sales"
                         name="Sales"
-                        stroke={CHART_COLORS.inventory.sales}
+                        stroke={CHART_COLORS.info}
                         strokeWidth={2}
-                        activeDot={{ r: 6, fill: CHART_COLORS.inventory.sales }}
+                        activeDot={{ r: 6, fill: CHART_COLORS.info }}
                       />
                     </LineChart>
                   </ResponsiveContainer>

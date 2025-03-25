@@ -214,69 +214,43 @@ export default function POS() {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 h-full">
-      {/* Left Panel: Medicine Search and Selection */}
-      <div className="lg:col-span-2 p-4 md:p-6 overflow-y-auto bg-white dark:bg-slate-800 border-r border-border">
-        {/* Search Bar */}
-        <div className="flex w-full mb-6">
-          <div className="relative flex-grow">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <Input
-              type="text"
-              placeholder="Search medicines by name or scan barcode"
-              className="pl-10 pr-12"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <div className="absolute inset-y-0 right-0 flex items-center">
-              <Button variant="ghost" size="icon" className="h-full text-muted-foreground hover:text-foreground">
-                <ScanBarcode className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-          <Button className="ml-2" variant="outline">
-            <Filter className="h-4 w-4 mr-2" /> Filter
-          </Button>
-        </div>
-        
-        {/* Category Tabs */}
-        <Tabs defaultValue="all" onValueChange={setCategory}>
-          <TabsList className="mb-6 flex flex-wrap h-auto">
-            <TabsTrigger value="all">All</TabsTrigger>
-            {categories.map((cat: any) => (
-              <TabsTrigger key={cat.id} value={cat.id.toString()}>
-                {cat.name}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-          
-          <TabsContent value="all" className="mt-0">
-            {/* Medicine Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {medicinesLoading ? (
-                // Loading skeletons
-                Array(6).fill(0).map((_, index) => (
-                  <Card key={index} className="bg-slate-50 dark:bg-slate-800">
-                    <CardContent className="p-4">
-                      <div className="animate-pulse space-y-2">
-                        <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-3/4"></div>
-                        <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/2"></div>
-                        <div className="flex justify-between items-center mt-2">
-                          <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/4"></div>
-                          <div className="h-6 w-6 bg-slate-200 dark:bg-slate-700 rounded-full"></div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              ) : filteredMedicines.length === 0 ? (
-                <div className="col-span-3 py-12 text-center">
-                  <p className="text-muted-foreground">No medicines found matching your search criteria.</p>
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex flex-col md:flex-row gap-6">
+        {/* Left side - Medicine selection */}
+        <div className="flex-1">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex flex-col md:flex-row gap-4 mb-6">
+                <div className="flex-1">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                    <Input
+                      placeholder="Search medicines..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
                 </div>
-              ) : (
-                filteredMedicines.map((medicine: any) => (
+                <div className="w-full md:w-48">
+                  <Select value={category} onValueChange={setCategory}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Categories</SelectItem>
+                      {categories.map((cat: any) => (
+                        <SelectItem key={cat.id} value={cat.id.toString()}>
+                          {cat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredMedicines.map((medicine: any) => (
                   <MedicineCard
                     key={medicine.id}
                     medicine={{
@@ -288,58 +262,32 @@ export default function POS() {
                       stock: medicine.stock,
                       mrp: medicine.mrp,
                       lowStockThreshold: medicine.lowStockThreshold,
-                      gstRate: medicine.gstRate,
+                      gstRate: medicine.gstRate
                     }}
                     onAddToCart={addToCart}
                   />
-                ))
-              )}
-            </div>
-          </TabsContent>
-          
-          {/* One TabsContent for each category */}
-          {categories.map((cat: any) => (
-            <TabsContent key={cat.id} value={cat.id.toString()} className="mt-0">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredMedicines.length === 0 ? (
-                  <div className="col-span-3 py-12 text-center">
-                    <p className="text-muted-foreground">No medicines found in this category.</p>
+                ))}
+                {filteredMedicines.length === 0 && (
+                  <div className="col-span-full text-center py-8 text-muted-foreground">
+                    No medicines found matching your search criteria.
                   </div>
-                ) : (
-                  filteredMedicines.map((medicine: any) => (
-                    <MedicineCard
-                      key={medicine.id}
-                      medicine={{
-                        id: medicine.id,
-                        name: medicine.name,
-                        description: medicine.description || "",
-                        form: medicine.form,
-                        category: cat.name,
-                        stock: medicine.stock,
-                        mrp: medicine.mrp,
-                        lowStockThreshold: medicine.lowStockThreshold,
-                        gstRate: medicine.gstRate,
-                      }}
-                      onAddToCart={addToCart}
-                    />
-                  ))
                 )}
               </div>
-            </TabsContent>
-          ))}
-        </Tabs>
-      </div>
-      
-      {/* Right Panel: Cart */}
-      <div className="lg:col-span-1 bg-slate-50 dark:bg-slate-900 border-t lg:border-t-0 lg:border-l border-border flex flex-col h-full">
-        <Cart
-          items={cartItems}
-          onClearCart={clearCart}
-          onRemoveItem={removeFromCart}
-          onUpdateQuantity={updateQuantity}
-          onGenerateInvoice={generateInvoice}
-          loading={isGeneratingInvoice}
-        />
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right side - Cart */}
+        <div className="w-full md:w-96">
+          <Cart
+            items={cartItems}
+            onClearCart={clearCart}
+            onRemoveItem={removeFromCart}
+            onUpdateQuantity={updateQuantity}
+            onGenerateInvoice={generateInvoice}
+            loading={isGeneratingInvoice}
+          />
+        </div>
       </div>
     </div>
   );

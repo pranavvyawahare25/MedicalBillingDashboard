@@ -38,6 +38,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { useTranslate } from "@/hooks/use-translate";
 
 // Schema for adding a new customer
 const customerSchema = z.object({
@@ -65,6 +66,7 @@ export default function Patients() {
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
+  const { t } = useTranslate();
 
   // Customer form
   const customerForm = useForm<CustomerFormValues>({
@@ -175,17 +177,20 @@ export default function Patients() {
   // Add new prescription
   const onSubmitPrescription = async (data: PrescriptionFormValues) => {
     try {
+      console.log('Submitting prescription with data:', data);
       const payload = {
         ...data,
         customerId: parseInt(data.customerId),
         doctorId: data.doctorId ? parseInt(data.doctorId) : null,
       };
+      console.log('Prescription payload:', payload);
 
-      await apiRequest("POST", "/api/prescriptions", payload);
+      const response = await apiRequest("POST", "/api/prescriptions", payload);
+      console.log('Prescription submission response:', response);
 
       toast({
-        title: "Prescription added",
-        description: "Prescription has been added successfully",
+        title: t("common.upload"),
+        description: t("patient.prescription.uploadSuccess"),
       });
 
       // Refetch prescriptions
@@ -197,10 +202,11 @@ export default function Patients() {
       setIsAddPrescriptionDialogOpen(false);
       prescriptionForm.reset();
     } catch (error) {
+      console.error('Prescription submission error:', error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Failed to add prescription. Please try again.",
+        title: t("common.error"),
+        description: t("patient.prescription.uploadError"),
       });
     }
   };
@@ -258,13 +264,13 @@ export default function Patients() {
   const prescriptionColumns = [
     {
       key: "date",
-      header: "Date",
+      header: t("patient.prescription.date"),
       cell: (row: any) => <div>{format(new Date(row.createdAt), "dd/MM/yyyy")}</div>,
       sortable: true,
     },
     {
       key: "doctor",
-      header: "Doctor",
+      header: t("patient.prescription.doctor"),
       cell: (row: any) => {
         const doctor = doctors.find((d: any) => d.id === row.doctorId);
         return <div>{doctor ? `Dr. ${doctor.name}` : "Not specified"}</div>;
@@ -272,46 +278,92 @@ export default function Patients() {
     },
     {
       key: "notes",
-      header: "Notes",
+      header: t("patient.prescription.notes"),
       cell: (row: any) => <div>{row.notes || "-"}</div>,
     },
     {
-      key: "imagePath", // Added imagePath column
-      header: "Image",
-      cell: (row: any) => (row.imagePath ? <img src={row.imagePath} alt="Prescription" width={100} /> : "-"),
+      key: "imagePath",
+      header: t("patient.prescription.upload"),
+      cell: (row: any) => {
+        console.log('Rendering prescription row:', row);
+        return (
+          <div className="w-[100px] h-[100px] rounded-md overflow-hidden bg-zinc-900 flex flex-col items-center justify-center">
+            {row.prescriptionImagePath ? (
+              <>
+                <img 
+                  src={`/uploads/prescriptions/${row.prescriptionImagePath}`}
+                  alt="Prescription"
+                  className="w-full h-[80px] object-cover"
+                  onError={(e) => {
+                    console.error('Image failed to load:', row.prescriptionImagePath);
+                    e.currentTarget.src = '/placeholder-prescription.png';
+                  }}
+                />
+                <div className="text-xs text-zinc-400 mt-1">
+                  {row.prescriptionImagePath.split('.').pop()?.toUpperCase()}
+                </div>
+              </>
+            ) : (
+              <div className="text-zinc-500 text-sm">No image</div>
+            )}
+          </div>
+        );
+      },
     },
     {
       key: "actions",
-      header: "Actions",
+      header: t("common.actions"),
       cell: (row: any) => (
         <div className="flex space-x-2">
           <Dialog>
             <DialogTrigger asChild>
               <Button variant="ghost" size="sm">
-                <FileText className="h-4 w-4 mr-1" /> View
+                <FileText className="h-4 w-4 mr-1" /> {t("common.view")}
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-3xl">
-              <DialogHeader>
-                <DialogTitle>Prescription Details</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div className="aspect-[16/9] relative rounded-lg overflow-hidden">
-                  <img 
-                    src={row.imagePath} 
-                    alt="Prescription"
-                    className="object-contain w-full h-full"
-                  />
+            <DialogContent className="bg-[#1C1C1C] border-zinc-800 max-w-4xl p-6">
+              <div className="flex justify-between items-center mb-6">
+                <DialogTitle className="text-2xl font-normal text-white">
+                  Prescription Details
+                </DialogTitle>
+                <DialogTrigger asChild>
+                  <Button variant="ghost" size="icon" className="text-zinc-400 hover:text-white">
+                    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M11.7816 4.03157C12.0062 3.80702 12.0062 3.44295 11.7816 3.2184C11.5571 2.99385 11.193 2.99385 10.9685 3.2184L7.50005 6.68682L4.03164 3.2184C3.80708 2.99385 3.44301 2.99385 3.21846 3.2184C2.99391 3.44295 2.99391 3.80702 3.21846 4.03157L6.68688 7.49999L3.21846 10.9684C2.99391 11.193 2.99391 11.557 3.21846 11.7816C3.44301 12.0061 3.80708 12.0061 4.03164 11.7816L7.50005 8.31316L10.9685 11.7816C11.193 12.0061 11.5571 12.0061 11.7816 11.7816C12.0062 11.557 12.0062 11.193 11.7816 10.9684L8.31322 7.49999L11.7816 4.03157Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path>
+                    </svg>
+                  </Button>
+                </DialogTrigger>
+              </div>
+              <div className="space-y-6">
+                <div className="rounded-lg overflow-hidden bg-zinc-900 flex items-center justify-center min-h-[300px] relative">
+                  {row.prescriptionImagePath ? (
+                    <>
+                      <img 
+                        src={`/uploads/prescriptions/${row.prescriptionImagePath}`}
+                        alt="Prescription"
+                        className="max-w-full max-h-[70vh] object-contain"
+                        onError={(e) => {
+                          console.error('Image failed to load in dialog:', row.prescriptionImagePath);
+                          e.currentTarget.src = '/placeholder-prescription.png';
+                        }}
+                      />
+                      <div className="absolute bottom-4 right-4 bg-black/50 px-2 py-1 rounded text-xs text-white">
+                        {row.prescriptionImagePath.split('.').pop()?.toUpperCase()}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-zinc-500">No prescription image available</div>
+                  )}
                 </div>
-                <div className="grid gap-2">
-                  <h4 className="font-medium">Notes</h4>
-                  <p className="text-sm text-muted-foreground">{row.notes || "No notes provided"}</p>
+                <div>
+                  <h3 className="text-xl font-normal text-white mb-2">Notes</h3>
+                  <p className="text-[#71717A]">{row.notes || "Take as prescribed"}</p>
                 </div>
               </div>
             </DialogContent>
           </Dialog>
           <Button variant="ghost" size="sm">
-            <Upload className="h-4 w-4 mr-1" /> Share
+            <Upload className="h-4 w-4 mr-1" /> {t("common.share")}
           </Button>
         </div>
       ),
@@ -460,19 +512,19 @@ export default function Patients() {
             <TabsContent value="prescriptions" className="mt-4">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle>Prescriptions</CardTitle>
+                  <CardTitle>{t("patient.prescription.title")}</CardTitle>
                   <Button 
                     onClick={() => setIsAddPrescriptionDialogOpen(true)}
                     variant="outline"
                   >
-                    <Plus className="h-4 w-4 mr-2" /> Add Prescription
+                    <Plus className="h-4 w-4 mr-2" /> {t("patient.prescription.upload")}
                   </Button>
                 </CardHeader>
                 <CardContent>
                   {prescriptions.length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground">
                       <FileText className="h-12 w-12 mx-auto mb-3 opacity-20" />
-                      <p>No prescriptions found for this patient</p>
+                      <p>{t("patient.prescription.empty")}</p>
                     </div>
                   ) : (
                     <DataTable
@@ -584,7 +636,7 @@ export default function Patients() {
       <Dialog open={isAddPrescriptionDialogOpen} onOpenChange={setIsAddPrescriptionDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>Upload Prescription</DialogTitle>
+            <DialogTitle>{t("patient.prescription.uploadTitle")}</DialogTitle>
           </DialogHeader>
           <Form {...prescriptionForm}>
             <form onSubmit={prescriptionForm.handleSubmit(onSubmitPrescription)} className="space-y-4">
@@ -593,14 +645,14 @@ export default function Patients() {
                 name="customerId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Patient</FormLabel>
+                    <FormLabel>{t("patient.prescription.selectPatient")}</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select patient" />
+                          <SelectValue placeholder={t("patient.prescription.selectPatient")} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -621,14 +673,14 @@ export default function Patients() {
                 name="doctorId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Doctor (Optional)</FormLabel>
+                    <FormLabel>{t("patient.prescription.selectDoctor")}</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select doctor" />
+                          <SelectValue placeholder={t("patient.prescription.selectDoctor")} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -646,20 +698,21 @@ export default function Patients() {
               />
 
               <div className="space-y-2">
-                <Label>Prescription Image</Label>
+                <Label>{t("patient.prescription.upload")}</Label>
                 <div className="border-2 border-dashed border-border rounded-md p-6 text-center">
                   <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                   <p className="text-sm text-muted-foreground mb-2">
-                    Drag and drop or click to upload
+                    {t("patient.prescription.dragAndDrop")}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Supports: JPG, PNG up to 5MB
+                    {t("patient.prescription.supportedFormats")}
                   </p>
                   <Input
                     type="file"
                     accept="image/jpeg,image/png"
                     onChange={(e) => {
                       if (e.target.files?.[0]) {
+                        console.log('Selected file:', e.target.files[0]);
                         const formData = new FormData();
                         formData.append("prescription", e.target.files[0]);
 
@@ -670,17 +723,20 @@ export default function Patients() {
                         })
                         .then(res => res.json())
                         .then(data => {
+                          console.log('Upload response:', data);
                           prescriptionForm.setValue("imagePath", data.path);
+                          console.log('Form values after setting path:', prescriptionForm.getValues());
                           toast({
-                            title: "File uploaded",
-                            description: "Prescription image uploaded successfully",
+                            title: t("common.upload"),
+                            description: t("patient.prescription.uploadSuccess"),
                           });
                         })
-                        .catch(() => {
+                        .catch((error) => {
+                          console.error('Upload error:', error);
                           toast({
                             variant: "destructive",
-                            title: "Error",
-                            description: "Failed to upload prescription image",
+                            title: t("common.error"),
+                            description: t("patient.prescription.uploadError"),
                           });
                         });
                       }
@@ -694,10 +750,10 @@ export default function Patients() {
                 name="notes"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Notes (Optional)</FormLabel>
+                    <FormLabel>{t("patient.prescription.notes")}</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Add any notes about this prescription"
+                        placeholder={t("patient.prescription.addNotes")}
                         {...field}
                       />
                     </FormControl>
@@ -707,7 +763,7 @@ export default function Patients() {
               />
 
               <DialogFooter>
-                <Button type="submit">Upload Prescription</Button>
+                <Button type="submit">{t("common.upload")}</Button>
               </DialogFooter>
             </form>
           </Form>
