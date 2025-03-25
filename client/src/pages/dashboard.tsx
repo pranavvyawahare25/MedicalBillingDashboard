@@ -6,9 +6,12 @@ import { TopSellingTable, TopSellingMedicine } from "@/components/dashboard/top-
 import { RecentActivity } from "@/components/dashboard/recent-activity";
 import { format, subDays } from "date-fns";
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis } from "recharts";
+import { Search } from '../components/Search';
+import { SearchResult } from '@shared/services/search';
 
 export default function Dashboard() {
   const [dailySalesData, setDailySalesData] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<SearchResult | null>(null);
 
   // Fetch low stock medicines
   const { data: lowStockMedicines = [] } = useQuery({
@@ -134,57 +137,130 @@ export default function Dashboard() {
     ? Math.round(((todaySales - yesterdaySales) / yesterdaySales) * 100) 
     : 0;
 
+  const handleSearch = (results: SearchResult) => {
+    setSearchResults(results);
+  };
+
   return (
-    <div className="p-4 md:p-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        {/* Daily Sales Card */}
-        <StatsCard
-          title="Daily Sales"
-          value={`₹${todaySales.toLocaleString()}`}
-          description={`${todayTransactions} transactions today`}
-          change={salesChange}
-        >
-          <div className="h-16 mt-4">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={dailySalesData}>
-                <XAxis dataKey="date" tickLine={false} axisLine={false} tickFormatter={() => ''} />
-                <Tooltip
-                  formatter={(value: number) => [`₹${value}`, 'Sales']}
-                  labelFormatter={(value) => `Date: ${value}`}
-                />
-                <Bar dataKey="amount" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </StatsCard>
-        
-        {/* Low Stock Card */}
-        <AlertCard
-          title="Low Stock Alert"
-          count={lowStockMedicines.length}
-          description="Requiring immediate restock"
-          items={lowStockItems}
-          icon="alert"
-        />
-        
-        {/* Expiry Alert Card */}
-        <AlertCard
-          title="Expiry Alert"
-          count={expiringMedicines.length}
-          description="Expiring within 30 days"
-          items={expiringItems}
-          icon="calendar"
-        />
-      </div>
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-8">Medical Billing Dashboard</h1>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Top Selling Medicines */}
-        <TopSellingTable 
-          medicines={topSellingMedicines as TopSellingMedicine[]} 
-        />
+      <Search onSearch={handleSearch} />
+
+      {searchResults && (
+        <div className="mt-8">
+          {searchResults.medicines.length > 0 && (
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold mb-4">Medicines</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {searchResults.medicines.map((medicine) => (
+                  <div key={medicine.id} className="p-4 bg-white rounded-lg shadow">
+                    <h3 className="font-medium">{medicine.name}</h3>
+                    <p className="text-gray-600">{medicine.description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {searchResults.customers.length > 0 && (
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold mb-4">Customers</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {searchResults.customers.map((customer) => (
+                  <div key={customer.id} className="p-4 bg-white rounded-lg shadow">
+                    <h3 className="font-medium">{customer.name}</h3>
+                    <p className="text-gray-600">{customer.phone}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {searchResults.doctors.length > 0 && (
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold mb-4">Doctors</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {searchResults.doctors.map((doctor) => (
+                  <div key={doctor.id} className="p-4 bg-white rounded-lg shadow">
+                    <h3 className="font-medium">{doctor.name}</h3>
+                    <p className="text-gray-600">{doctor.specialization}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="p-4 md:p-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          {/* Daily Sales Card */}
+          <StatsCard
+            title="Daily Sales"
+            value={`₹${todaySales.toLocaleString()}`}
+            description={`${todayTransactions} transactions today`}
+            change={salesChange}
+          >
+            <div className="h-16 mt-4">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={dailySalesData}>
+                  <XAxis 
+                    dataKey="date" 
+                    tickLine={false} 
+                    axisLine={false} 
+                    tickFormatter={() => ''} 
+                    stroke="hsl(var(--muted-foreground))"
+                  />
+                  <Tooltip
+                    formatter={(value: number) => [`₹${value}`, 'Sales']}
+                    labelFormatter={(value) => `Date: ${value}`}
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--background))',
+                      border: '1px solid hsl(var(--border))',
+                      color: 'hsl(var(--foreground))'
+                    }}
+                    labelStyle={{ color: 'hsl(var(--foreground))' }}
+                    itemStyle={{ color: 'hsl(var(--foreground))' }}
+                  />
+                  <Bar 
+                    dataKey="amount" 
+                    fill="hsl(var(--primary))" 
+                    radius={[4, 4, 0, 0]} 
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </StatsCard>
+          
+          {/* Low Stock Card */}
+          <AlertCard
+            title="Low Stock Alert"
+            count={lowStockMedicines.length}
+            description="Requiring immediate restock"
+            items={lowStockItems}
+            icon="alert"
+          />
+          
+          {/* Expiry Alert Card */}
+          <AlertCard
+            title="Expiry Alert"
+            count={expiringMedicines.length}
+            description="Expiring within 30 days"
+            items={expiringItems}
+            icon="calendar"
+          />
+        </div>
         
-        {/* Recent Activity */}
-        <RecentActivity activities={recentActivity} />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Top Selling Medicines */}
+          <TopSellingTable 
+            medicines={topSellingMedicines as TopSellingMedicine[]} 
+          />
+          
+          {/* Recent Activity */}
+          <RecentActivity activities={recentActivity} />
+        </div>
       </div>
     </div>
   );

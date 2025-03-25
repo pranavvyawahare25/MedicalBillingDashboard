@@ -225,8 +225,38 @@ export default function Reports() {
   // Calculate total sales for the selected period
   const totalSales = salesChartData.reduce((sum, day) => sum + day.sales, 0);
 
-  // Colors for pie chart
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
+  // Colors for pie chart and other graphs
+  const COLORS = [
+    'hsl(var(--primary))',
+    'hsl(var(--secondary))',
+    'hsl(var(--accent))',
+    'hsl(var(--destructive))',
+    'hsl(var(--muted))',
+    'hsl(var(--card))',
+    'hsl(var(--popover))',
+    'hsl(var(--border))',
+    'hsl(var(--input))',
+    'hsl(var(--ring))'
+  ];
+
+  // Additional colors for specific charts
+  const CHART_COLORS = {
+    sales: {
+      line: 'hsl(var(--primary))',
+      bar: 'hsl(var(--secondary))',
+      area: 'hsl(var(--accent))'
+    },
+    gst: {
+      cgst: 'hsl(var(--primary))',
+      sgst: 'hsl(var(--secondary))',
+      igst: 'hsl(var(--accent))'
+    },
+    inventory: {
+      value: 'hsl(var(--primary))',
+      purchases: 'hsl(var(--secondary))',
+      sales: 'hsl(var(--accent))'
+    }
+  };
 
   return (
     <div className="p-4 md:p-6">
@@ -327,13 +357,13 @@ export default function Reports() {
                     <LineChart data={salesChartData}>
                       <XAxis 
                         dataKey="date" 
-                        stroke="#888888"
+                        stroke="hsl(var(--muted-foreground))"
                         fontSize={12}
                         tickLine={false}
                         axisLine={false}
                       />
                       <YAxis
-                        stroke="#888888"
+                        stroke="hsl(var(--muted-foreground))"
                         fontSize={12}
                         tickLine={false}
                         axisLine={false}
@@ -342,13 +372,20 @@ export default function Reports() {
                       <Tooltip 
                         formatter={(value: any) => [`₹${value}`, 'Sales']}
                         labelFormatter={(value) => `Date: ${value}`}
+                        contentStyle={{
+                          backgroundColor: 'hsl(var(--background))',
+                          border: '1px solid hsl(var(--border))',
+                          color: 'hsl(var(--foreground))'
+                        }}
+                        labelStyle={{ color: 'hsl(var(--foreground))' }}
+                        itemStyle={{ color: 'hsl(var(--foreground))' }}
                       />
                       <Line 
                         type="monotone" 
                         dataKey="sales" 
-                        stroke="hsl(var(--primary))" 
+                        stroke={CHART_COLORS.sales.line}
                         strokeWidth={2} 
-                        activeDot={{ r: 6 }} 
+                        activeDot={{ r: 6, fill: CHART_COLORS.sales.line }} 
                       />
                     </LineChart>
                   </ResponsiveContainer>
@@ -382,6 +419,13 @@ export default function Reports() {
                       </Pie>
                       <Tooltip 
                         formatter={(value: any) => [`${value}%`, 'Percentage']}
+                        contentStyle={{
+                          backgroundColor: 'hsl(var(--background))',
+                          border: '1px solid hsl(var(--border))',
+                          color: 'hsl(var(--foreground))'
+                        }}
+                        labelStyle={{ color: 'hsl(var(--foreground))' }}
+                        itemStyle={{ color: 'hsl(var(--foreground))' }}
                       />
                     </PieChart>
                   </ResponsiveContainer>
@@ -488,13 +532,13 @@ export default function Reports() {
                   <BarChart data={gstReportData}>
                     <XAxis
                       dataKey="month"
-                      stroke="#888888"
+                      stroke="hsl(var(--muted-foreground))"
                       fontSize={12}
                       tickLine={false}
                       axisLine={false}
                     />
                     <YAxis
-                      stroke="#888888"
+                      stroke="hsl(var(--muted-foreground))"
                       fontSize={12}
                       tickLine={false}
                       axisLine={false}
@@ -502,10 +546,19 @@ export default function Reports() {
                     />
                     <Tooltip
                       formatter={(value: any) => [`₹${value}`, 'Amount']}
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--background))',
+                        border: '1px solid hsl(var(--border))',
+                        color: 'hsl(var(--foreground))'
+                      }}
+                      labelStyle={{ color: 'hsl(var(--foreground))' }}
+                      itemStyle={{ color: 'hsl(var(--foreground))' }}
                     />
-                    <Legend />
-                    <Bar dataKey="cgst" name="CGST" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="sgst" name="SGST" fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} />
+                    <Legend 
+                      formatter={(value) => <span style={{ color: 'hsl(var(--foreground))' }}>{value}</span>}
+                    />
+                    <Bar dataKey="cgst" name="CGST" fill={CHART_COLORS.gst.cgst} radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="sgst" name="SGST" fill={CHART_COLORS.gst.sgst} radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -610,13 +663,13 @@ export default function Reports() {
                     >
                       <XAxis 
                         dataKey="name" 
-                        stroke="#888888"
+                        stroke="hsl(var(--muted-foreground))"
                         fontSize={12}
                         tickLine={false}
                         axisLine={false}
                       />
                       <YAxis
-                        stroke="#888888"
+                        stroke="hsl(var(--muted-foreground))"
                         fontSize={12}
                         tickLine={false}
                         axisLine={false}
@@ -624,8 +677,15 @@ export default function Reports() {
                       />
                       <Tooltip 
                         formatter={(value: any) => [`₹${value.toLocaleString()}`, 'Value']}
+                        contentStyle={{
+                          backgroundColor: 'hsl(var(--background))',
+                          border: '1px solid hsl(var(--border))',
+                          color: 'hsl(var(--foreground))'
+                        }}
+                        labelStyle={{ color: 'hsl(var(--foreground))' }}
+                        itemStyle={{ color: 'hsl(var(--foreground))' }}
                       />
-                      <Bar dataKey="value" name="Inventory Value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="value" name="Inventory Value" fill={CHART_COLORS.inventory.value} radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -656,34 +716,44 @@ export default function Reports() {
                     >
                       <XAxis
                         dataKey="date"
-                        stroke="#888888"
+                        stroke="hsl(var(--muted-foreground))"
                         fontSize={12}
                         tickLine={false}
                         axisLine={false}
                       />
                       <YAxis
-                        stroke="#888888"
+                        stroke="hsl(var(--muted-foreground))"
                         fontSize={12}
                         tickLine={false}
                         axisLine={false}
                       />
-                      <Tooltip />
-                      <Legend />
+                      <Tooltip 
+                        contentStyle={{
+                          backgroundColor: 'hsl(var(--background))',
+                          border: '1px solid hsl(var(--border))',
+                          color: 'hsl(var(--foreground))'
+                        }}
+                        labelStyle={{ color: 'hsl(var(--foreground))' }}
+                        itemStyle={{ color: 'hsl(var(--foreground))' }}
+                      />
+                      <Legend 
+                        formatter={(value) => <span style={{ color: 'hsl(var(--foreground))' }}>{value}</span>}
+                      />
                       <Line
                         type="monotone"
                         dataKey="purchases"
                         name="Purchases"
-                        stroke="hsl(var(--chart-1))"
+                        stroke={CHART_COLORS.inventory.purchases}
                         strokeWidth={2}
-                        activeDot={{ r: 6 }}
+                        activeDot={{ r: 6, fill: CHART_COLORS.inventory.purchases }}
                       />
                       <Line
                         type="monotone"
                         dataKey="sales"
                         name="Sales"
-                        stroke="hsl(var(--chart-2))"
+                        stroke={CHART_COLORS.inventory.sales}
                         strokeWidth={2}
-                        activeDot={{ r: 6 }}
+                        activeDot={{ r: 6, fill: CHART_COLORS.inventory.sales }}
                       />
                     </LineChart>
                   </ResponsiveContainer>

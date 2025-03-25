@@ -3,6 +3,7 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/ui/theme-provider";
+import { LanguageProvider } from "@/contexts/language-context";
 import NotFound from "@/pages/not-found";
 import Login from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
@@ -82,23 +83,25 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="light" storageKey="meditrack-theme">
-        {loading ? (
-          <div className="flex h-screen items-center justify-center">
-            <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
-          </div>
-        ) : user ? (
-          <AuthenticatedApp user={user} />
-        ) : (
-          <Switch>
-            <Route path="/login">
-              <Login onLoginSuccess={setUser} />
-            </Route>
-            <Route>
-              <Login onLoginSuccess={setUser} />
-            </Route>
-          </Switch>
-        )}
-        <Toaster />
+        <LanguageProvider>
+          {loading ? (
+            <div className="flex h-screen items-center justify-center">
+              <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+            </div>
+          ) : user ? (
+            <AuthenticatedApp user={user} />
+          ) : (
+            <Switch>
+              <Route path="/login">
+                <Login onLoginSuccess={setUser} />
+              </Route>
+              <Route>
+                <Login onLoginSuccess={setUser} />
+              </Route>
+            </Switch>
+          )}
+          <Toaster />
+        </LanguageProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

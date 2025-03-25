@@ -50,6 +50,10 @@ import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 import { useTheme } from "@/components/ui/theme-provider";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/language-context";
+import { supportedLanguages } from "@/config/languages";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Separator } from "@/components/ui/separator";
 
 // Schema for adding a new user
 const userSchema = z.object({
@@ -88,6 +92,7 @@ export default function Settings() {
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
+  const { currentLanguage, setLanguage } = useLanguage();
 
   // User form
   const userForm = useForm<UserFormValues>({
@@ -359,65 +364,117 @@ export default function Settings() {
   ];
 
   return (
-    <div className="p-4 md:p-6">
-      <h2 className="text-2xl font-bold mb-6">System Settings</h2>
-      
-      <Tabs defaultValue="users">
-        <TabsList className="mb-4">
-          <TabsTrigger value="users">User Management</TabsTrigger>
-          <TabsTrigger value="doctors">Doctor Management</TabsTrigger>
-          <TabsTrigger value="store">Store Settings</TabsTrigger>
-          <TabsTrigger value="preferences">Preferences</TabsTrigger>
+    <div className="p-4 md:p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold">Settings</h2>
+          <p className="text-sm text-muted-foreground">
+            Manage your application preferences
+          </p>
+        </div>
+      </div>
+
+      <Tabs defaultValue="general">
+        <TabsList>
+          <TabsTrigger value="general">General</TabsTrigger>
+          <TabsTrigger value="users">Users</TabsTrigger>
+          <TabsTrigger value="doctors">Doctors</TabsTrigger>
         </TabsList>
-        
-        {/* User Management */}
-        <TabsContent value="users">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Users</CardTitle>
-                <CardDescription>Manage user accounts and roles</CardDescription>
-              </div>
-              <Button onClick={() => setIsAddUserDialogOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" /> Add User
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <DataTable
-                data={users}
-                columns={userColumns}
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        {/* Doctor Management */}
-        <TabsContent value="doctors">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Doctors</CardTitle>
-                <CardDescription>Manage doctor information</CardDescription>
-              </div>
-              <Button onClick={() => setIsAddDoctorDialogOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" /> Add Doctor
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <DataTable
-                data={doctors}
-                columns={doctorColumns}
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        {/* Store Settings */}
-        <TabsContent value="store">
+
+        <TabsContent value="general" className="space-y-6">
+          {/* Language Settings */}
           <Card>
             <CardHeader>
-              <CardTitle>Store Information</CardTitle>
-              <CardDescription>Update your store details and tax information</CardDescription>
+              <CardTitle>Language Settings</CardTitle>
+              <CardDescription>Choose your preferred language for the interface</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <RadioGroup
+                value={currentLanguage.code}
+                onValueChange={setLanguage}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+              >
+                {supportedLanguages.map((lang) => (
+                  <div key={lang.code} className="flex items-center space-x-2">
+                    <RadioGroupItem value={lang.code} id={`lang-${lang.code}`} />
+                    <Label htmlFor={`lang-${lang.code}`} className="flex flex-col">
+                      <span className="font-medium">{lang.nativeName}</span>
+                      <span className="text-sm text-muted-foreground">{lang.name}</span>
+                    </Label>
+                  </div>
+                ))}
+              </RadioGroup>
+              <p className="text-sm text-muted-foreground mt-4">
+                Note: Changing the language will affect the entire application interface
+              </p>
+            </CardContent>
+          </Card>
+
+          <Separator />
+
+          {/* Theme Settings */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Theme Settings</CardTitle>
+              <CardDescription>Customize the appearance of the application</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Theme</Label>
+                  <div className="flex flex-col xs:flex-row gap-2">
+                    <Button
+                      variant={theme === "light" ? "default" : "outline"}
+                      className="w-full xs:w-auto"
+                      onClick={() => setTheme("light")}
+                    >
+                      <Sun className="h-4 w-4 mr-2" /> Light
+                    </Button>
+                    <Button
+                      variant={theme === "dark" ? "default" : "outline"}
+                      className="w-full xs:w-auto"
+                      onClick={() => setTheme("dark")}
+                    >
+                      <Moon className="h-4 w-4 mr-2" /> Dark
+                    </Button>
+                    <Button
+                      variant={theme === "system" ? "default" : "outline"}
+                      className="w-full xs:w-auto"
+                      onClick={() => setTheme("system")}
+                    >
+                      <Laptop className="h-4 w-4 mr-2" /> System
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Language</Label>
+                  <Select defaultValue="en">
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select language" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="en">English</SelectItem>
+                      <SelectItem value="hi">Hindi</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <Switch id="enable-animations" defaultChecked />
+                  <Label htmlFor="enable-animations">Enable animations</Label>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Separator />
+
+          {/* Store Settings */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Store Settings</CardTitle>
+              <CardDescription>Update your store information</CardDescription>
             </CardHeader>
             <CardContent>
               <Form {...storeSettingsForm}>
@@ -503,168 +560,46 @@ export default function Settings() {
               </Form>
             </CardContent>
           </Card>
-          
-          <Card className="mt-6">
-            <CardHeader>
-              <CardTitle>Receipt Settings</CardTitle>
-              <CardDescription>Configure how your receipts and invoices appear</CardDescription>
+        </TabsContent>
+
+        {/* User Management */}
+        <TabsContent value="users">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Users</CardTitle>
+                <CardDescription>Manage user accounts and roles</CardDescription>
+              </div>
+              <Button onClick={() => setIsAddUserDialogOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" /> Add User
+              </Button>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="receipt-header">Receipt Header</Label>
-                    <Input id="receipt-header" defaultValue="MediTrack Pharmacy" />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="receipt-footer">Receipt Footer</Label>
-                    <Input id="receipt-footer" defaultValue="Thank you for your business!" />
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <Switch id="show-gst" defaultChecked />
-                  <Label htmlFor="show-gst">Show GST breakdown on receipts</Label>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <Switch id="show-logo" defaultChecked />
-                  <Label htmlFor="show-logo">Print logo on receipts</Label>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label>Default Printer</Label>
-                  <Select defaultValue="receipt">
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select printer" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="receipt">Receipt Printer (58mm)</SelectItem>
-                      <SelectItem value="thermal">Thermal Printer (80mm)</SelectItem>
-                      <SelectItem value="a4">A4 Printer</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="flex justify-end">
-                  <Button>
-                    <Printer className="h-4 w-4 mr-2" /> Test Print
-                  </Button>
-                </div>
-              </div>
+              <DataTable
+                data={users}
+                columns={userColumns}
+              />
             </CardContent>
           </Card>
         </TabsContent>
         
-        {/* Preferences */}
-        <TabsContent value="preferences">
+        {/* Doctor Management */}
+        <TabsContent value="doctors">
           <Card>
-            <CardHeader>
-              <CardTitle>Appearance</CardTitle>
-              <CardDescription>Customize the appearance of your application</CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Doctors</CardTitle>
+                <CardDescription>Manage doctor information</CardDescription>
+              </div>
+              <Button onClick={() => setIsAddDoctorDialogOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" /> Add Doctor
+              </Button>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Theme</Label>
-                  <div className="flex flex-col xs:flex-row gap-2">
-                    <Button
-                      variant={theme === "light" ? "default" : "outline"}
-                      className="w-full xs:w-auto"
-                      onClick={() => setTheme("light")}
-                    >
-                      <Sun className="h-4 w-4 mr-2" /> Light
-                    </Button>
-                    <Button
-                      variant={theme === "dark" ? "default" : "outline"}
-                      className="w-full xs:w-auto"
-                      onClick={() => setTheme("dark")}
-                    >
-                      <Moon className="h-4 w-4 mr-2" /> Dark
-                    </Button>
-                    <Button
-                      variant={theme === "system" ? "default" : "outline"}
-                      className="w-full xs:w-auto"
-                      onClick={() => setTheme("system")}
-                    >
-                      <Laptop className="h-4 w-4 mr-2" /> System
-                    </Button>
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label>Language</Label>
-                  <Select defaultValue="en">
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select language" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="en">English</SelectItem>
-                      <SelectItem value="hi">Hindi</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <Switch id="enable-animations" defaultChecked />
-                  <Label htmlFor="enable-animations">Enable animations</Label>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="mt-6">
-            <CardHeader>
-              <CardTitle>Notifications</CardTitle>
-              <CardDescription>Configure notification preferences</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="low-stock-alerts">Low Stock Alerts</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Receive alerts when products fall below threshold
-                    </p>
-                  </div>
-                  <Switch id="low-stock-alerts" defaultChecked />
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="expiry-alerts">Expiry Alerts</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Receive alerts for products nearing expiry
-                    </p>
-                  </div>
-                  <Switch id="expiry-alerts" defaultChecked />
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="sale-alerts">Sales Notifications</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Receive daily sales summary
-                    </p>
-                  </div>
-                  <Switch id="sale-alerts" defaultChecked />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label>Notification Sound</Label>
-                  <Select defaultValue="chime">
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select sound" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="chime">Chime</SelectItem>
-                      <SelectItem value="bell">Bell</SelectItem>
-                      <SelectItem value="none">None</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+              <DataTable
+                data={doctors}
+                columns={doctorColumns}
+              />
             </CardContent>
           </Card>
         </TabsContent>
