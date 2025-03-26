@@ -36,6 +36,7 @@ import { useToast } from "@/hooks/use-toast";
 import { InventoryTable } from "@/components/inventory/inventory-table";
 import { AddMedicineForm } from "@/components/inventory/add-medicine-form";
 import { useQueryClient } from "@tanstack/react-query";
+import { useTranslate } from "@/hooks/use-translate";
 
 // Schema for adding a new category
 const categorySchema = z.object({
@@ -48,6 +49,7 @@ export default function Inventory() {
   const [isAddCategoryDialogOpen, setIsAddCategoryDialogOpen] = useState(false);
   const { toast } = useToast();
   const queryClient1 = useQueryClient();
+  const t = useTranslate();
 
   // Category form
   const categoryForm = useForm<CategoryFormValues>({
@@ -165,17 +167,17 @@ export default function Inventory() {
   return (
     <div className="p-4 md:p-6">
       <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h2 className="text-2xl font-bold">Inventory Management</h2>
+        <h2 className="text-2xl font-bold">{t('inventoryTitle')}</h2>
         <div className="flex flex-col sm:flex-row gap-2">
           <Dialog>
             <DialogTrigger asChild>
               <Button>
-                <Plus className="h-4 w-4 mr-2" /> Add New Medicine
+                <Plus className="h-4 w-4 mr-2" /> {t('addNewMedicine')}
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[600px]">
               <DialogHeader>
-                <DialogTitle>Add New Medicine</DialogTitle>
+                <DialogTitle>{t('addNewMedicine')}</DialogTitle>
               </DialogHeader>
               <AddMedicineForm 
                 categories={categories} 
@@ -190,12 +192,12 @@ export default function Inventory() {
           <Dialog open={isAddCategoryDialogOpen} onOpenChange={setIsAddCategoryDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline">
-                <Plus className="h-4 w-4 mr-2" /> Add Category
+                <Plus className="h-4 w-4 mr-2" /> {t('addCategory')}
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[400px]">
               <DialogHeader>
-                <DialogTitle>Add New Category</DialogTitle>
+                <DialogTitle>{t('addNewCategory')}</DialogTitle>
               </DialogHeader>
               <Form {...categoryForm}>
                 <form onSubmit={categoryForm.handleSubmit(onSubmitCategory)} className="space-y-4">
@@ -204,15 +206,15 @@ export default function Inventory() {
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Category Name</FormLabel>
+                        <FormLabel>{t('categoryName')}</FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter category name" {...field} />
+                          <Input placeholder={t('enterCategoryName')} {...field} />
                         </FormControl>
                       </FormItem>
                     )}
                   />
                   <DialogFooter>
-                    <Button type="submit">Add Category</Button>
+                    <Button type="submit">{t('addCategory')}</Button>
                   </DialogFooter>
                 </form>
               </Form>
@@ -220,7 +222,7 @@ export default function Inventory() {
           </Dialog>
 
           <Button variant="outline" onClick={exportInventory}>
-            <Download className="h-4 w-4 mr-2" /> Export
+            <Download className="h-4 w-4 mr-2" /> {t('export')}
           </Button>
         </div>
       </div>

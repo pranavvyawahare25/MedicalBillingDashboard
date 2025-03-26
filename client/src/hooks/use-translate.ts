@@ -1,39 +1,36 @@
-import { useLanguage } from "@/contexts/language-context";
 import { translations } from "@/config/translations";
+import type { LanguageCode, TranslationStructure } from "@/config/translations";
+import { useLanguage } from "@/contexts/language-context";
 
-type LanguageCode = 'en' | 'hi' | 'bn' | 'te' | 'mr' | 'ta' | 'gu' | 'kn' | 'ml' | 'pa' | 'ur';
-type TranslationValue = string | { [key: string]: TranslationValue };
-type TranslationsType = { [key in LanguageCode]: { [key: string]: TranslationValue } };
+type TranslationValue = string | Partial<TranslationStructure>;
 
 export function useTranslate() {
   const { currentLanguage } = useLanguage();
 
-  const t = (key: string, params?: Record<string, string>) => {
+  function t(key: string, params?: Record<string, string>) {
     const keys = key.split(".");
-    let result: TranslationValue = (translations as TranslationsType)[currentLanguage.code as LanguageCode];
-    
+    const langCode = currentLanguage.code as LanguageCode;
+    let result: TranslationValue = translations[langCode];
+
     for (const k of keys) {
       if (!result || typeof result !== "object") {
-        console.warn(`Translation not found for key: ${key} in language: ${currentLanguage.code}`);
-        return key;
+        return key; // Return the key if translation not found
       }
-      result = (result as { [key: string]: TranslationValue })[k];
+      result = (result as Record<string, TranslationValue>)[k];
     }
 
     if (typeof result !== "string") {
-      console.warn(`Translation not found for key: ${key} in language: ${currentLanguage.code}`);
       return key;
     }
 
     if (params) {
-      return Object.entries(params).reduce(
-        (str: string, [paramKey, value]) => str.replace(`{${paramKey}}`, value),
-        result
-      );
+      return Object.entries(params).reduce((str, [key, value]) => {
+        return str.replace(new RegExp(`{{${key}}}`, "g"), value);
+      }, result);
     }
 
     return result;
-  };
+  }
 
-  return { t };
+  return t;
 } 

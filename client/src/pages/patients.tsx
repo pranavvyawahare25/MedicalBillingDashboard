@@ -66,7 +66,7 @@ export default function Patients() {
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
-  const { t } = useTranslate();
+  const t = useTranslate();
 
   // Customer form
   const customerForm = useForm<CustomerFormValues>({
@@ -403,80 +403,60 @@ export default function Patients() {
 
   return (
     <div className="p-4 md:p-6">
-      <h2 className="text-2xl font-bold mb-6">Patient & Prescription Management</h2>
+      <h2 className="text-2xl font-bold mb-6">{t('patientTitle')}</h2>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Customers List */}
+        {/* Patients List */}
         <Card className="lg:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Patients</CardTitle>
-              <CardDescription>Manage patient information and records</CardDescription>
-            </div>
+            <CardTitle>{t('patients')}</CardTitle>
             <Button onClick={() => setIsAddCustomerDialogOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" /> Add Patient
+              <Plus className="h-4 w-4 mr-2" /> {t('addPatient')}
             </Button>
           </CardHeader>
           <CardContent>
-            <div className="mb-4 flex">
-              <div className="relative flex-grow">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input 
-                  placeholder="Search by name or phone..." 
-                  className="pl-8" 
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder={t('searchPatients')}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-8 pr-4"
+              />
             </div>
 
-            <DataTable
-              data={filteredCustomers}
-              columns={customerColumns}
-              pageSize={10}
-            />
+            <div className="mt-4">
+              <DataTable
+                data={filteredCustomers}
+                columns={customerColumns}
+                pageSize={10}
+              />
+            </div>
           </CardContent>
         </Card>
 
         {/* Patient Details */}
         <Card>
           <CardHeader>
-            <CardTitle>Patient Details</CardTitle>
+            <CardTitle>{t('patientDetails')}</CardTitle>
           </CardHeader>
           <CardContent>
             {selectedCustomer ? (
-              <div className="space-y-4">
-                <div className="flex items-center justify-center">
-                  <div className="h-20 w-20 bg-primary/10 rounded-full flex items-center justify-center">
-                    <User className="h-10 w-10 text-primary" />
+              <div>
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="font-medium">{selectedCustomer.name}</h3>
+                    <p className="text-sm text-muted-foreground">{selectedCustomer.phone}</p>
                   </div>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="text-center">
-                    <h3 className="text-xl font-semibold">{selectedCustomer.name}</h3>
-                    <div className="flex items-center justify-center text-sm text-muted-foreground">
-                      <Phone className="h-3 w-3 mr-1" /> {selectedCustomer.phone}
-                    </div>
-                  </div>
-
-                  {selectedCustomer.email && (
-                    <div className="text-sm">
-                      <Label className="font-medium">Email:</Label>
-                      <div>{selectedCustomer.email}</div>
-                    </div>
-                  )}
-
-                  {selectedCustomer.address && (
-                    <div className="text-sm">
-                      <Label className="font-medium">Address:</Label>
-                      <div>{selectedCustomer.address}</div>
-                    </div>
-                  )}
-
-                  <div className="text-sm">
-                    <Label className="font-medium">Customer since:</Label>
-                    <div>{format(new Date(selectedCustomer.createdAt), "dd MMMM, yyyy")}</div>
+                  <div className="space-y-1">
+                    <p className="text-sm">
+                      <span className="text-muted-foreground">{t('email')}:</span>{" "}
+                      {selectedCustomer.email || '-'}
+                    </p>
+                    <p className="text-sm">
+                      <span className="text-muted-foreground">{t('address')}:</span>{" "}
+                      {selectedCustomer.address || '-'}
+                    </p>
                   </div>
                 </div>
 
@@ -486,14 +466,14 @@ export default function Patients() {
                     variant="outline"
                     onClick={() => setIsAddPrescriptionDialogOpen(true)}
                   >
-                    <FileUp className="h-4 w-4 mr-2" /> Upload Prescription
+                    <FileUp className="h-4 w-4 mr-2" /> {t('uploadPrescription')}
                   </Button>
                 </div>
               </div>
             ) : (
               <div className="text-center py-8 text-muted-foreground">
                 <User className="h-12 w-12 mx-auto mb-3 opacity-20" />
-                <p>Select a patient to view details</p>
+                <p>{t('selectPatientToView')}</p>
               </div>
             )}
           </CardContent>
@@ -697,54 +677,6 @@ export default function Patients() {
                 )}
               />
 
-              <div className="space-y-2">
-                <Label>{t("patient.prescription.upload")}</Label>
-                <div className="border-2 border-dashed border-border rounded-md p-6 text-center">
-                  <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground mb-2">
-                    {t("patient.prescription.dragAndDrop")}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {t("patient.prescription.supportedFormats")}
-                  </p>
-                  <Input
-                    type="file"
-                    accept="image/jpeg,image/png"
-                    onChange={(e) => {
-                      if (e.target.files?.[0]) {
-                        console.log('Selected file:', e.target.files[0]);
-                        const formData = new FormData();
-                        formData.append("prescription", e.target.files[0]);
-
-                        // Upload the file
-                        fetch("/api/prescriptions/upload", {
-                          method: "POST",
-                          body: formData,
-                        })
-                        .then(res => res.json())
-                        .then(data => {
-                          console.log('Upload response:', data);
-                          prescriptionForm.setValue("imagePath", data.path);
-                          console.log('Form values after setting path:', prescriptionForm.getValues());
-                          toast({
-                            title: t("common.upload"),
-                            description: t("patient.prescription.uploadSuccess"),
-                          });
-                        })
-                        .catch((error) => {
-                          console.error('Upload error:', error);
-                          toast({
-                            variant: "destructive",
-                            title: t("common.error"),
-                            description: t("patient.prescription.uploadError"),
-                          });
-                        });
-                      }
-                    }}
-                  />
-                </div>
-              </div>
-
               <FormField
                 control={prescriptionForm.control}
                 name="notes"
@@ -756,6 +688,84 @@ export default function Patients() {
                         placeholder={t("patient.prescription.addNotes")}
                         {...field}
                       />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={prescriptionForm.control}
+                name="imagePath"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("patient.prescription.upload")}</FormLabel>
+                    <FormControl>
+                      <div className="flex flex-col items-center justify-center w-full">
+                        <label
+                          htmlFor="dropzone-file"
+                          className="flex flex-col items-center justify-center w-full h-64 border-2 border-zinc-800 border-dashed rounded-lg cursor-pointer bg-zinc-900 hover:bg-zinc-800"
+                        >
+                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                            <FileUp className="w-8 h-8 mb-2 text-zinc-400" />
+                            <p className="mb-1 text-sm text-zinc-400">
+                              <span className="font-semibold">{t("patient.prescription.dragAndDrop")}</span>
+                            </p>
+                            <p className="text-xs text-zinc-500">
+                              {t("patient.prescription.supportedFormats")}: JPEG, PNG, JPG, GIF
+                            </p>
+                          </div>
+                          <input
+                            id="dropzone-file"
+                            type="file"
+                            className="hidden"
+                            accept="image/jpeg,image/png,image/jpg,image/gif"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+
+                              try {
+                                const formData = new FormData();
+                                formData.append("prescription", file);
+
+                                const response = await fetch("/api/prescriptions/upload", {
+                                  method: "POST",
+                                  body: formData,
+                                  credentials: "include",
+                                });
+
+                                if (!response.ok) {
+                                  throw new Error("Upload failed");
+                                }
+
+                                const data = await response.json();
+                                prescriptionForm.setValue("imagePath", data.filename);
+
+                                toast({
+                                  title: t("common.upload"),
+                                  description: t("patient.prescription.uploadSuccess"),
+                                });
+                              } catch (error) {
+                                console.error("Upload error:", error);
+                                toast({
+                                  variant: "destructive",
+                                  title: t("common.error"),
+                                  description: t("patient.prescription.uploadError"),
+                                });
+                              }
+                            }}
+                          />
+                        </label>
+                        {field.value && (
+                          <div className="mt-2">
+                            <img
+                              src={`/uploads/prescriptions/${field.value}`}
+                              alt="Preview"
+                              className="max-h-32 rounded-lg"
+                            />
+                          </div>
+                        )}
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>

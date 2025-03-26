@@ -29,6 +29,7 @@ import {
   Legend
 } from "recharts";
 import { useLocation } from "wouter";
+import { useTranslate } from "@/hooks/use-translate";
 
 export default function Reports() {
   const [location] = useLocation();
@@ -38,6 +39,7 @@ export default function Reports() {
   const [dateRange, setDateRange] = useState("week");
   const [gstPeriod, setGstPeriod] = useState("month");
   const { toast } = useToast();
+  const t = useTranslate();
 
   // Get date range based on selection
   const getDateRange = () => {
@@ -258,20 +260,22 @@ export default function Reports() {
 
   return (
     <div className="p-4 md:p-6">
-      <h2 className="text-2xl font-bold mb-6">Reports & Analytics</h2>
+      <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h2 className="text-2xl font-bold">{t('reportsAndAnalytics')}</h2>
+      </div>
 
       <Tabs defaultValue={defaultTab}>
         <TabsList className="mb-4">
-          <TabsTrigger value="sales">Sales Reports</TabsTrigger>
-          <TabsTrigger value="gst">GST Reports</TabsTrigger>
-          <TabsTrigger value="inventory">Inventory Reports</TabsTrigger>
+          <TabsTrigger value="sales">{t('salesReports')}</TabsTrigger>
+          <TabsTrigger value="gst">{t('gstReports')}</TabsTrigger>
+          <TabsTrigger value="inventory">{t('inventoryReports')}</TabsTrigger>
         </TabsList>
 
         {/* Sales Reports */}
         <TabsContent value="sales">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
             <div>
-              <h3 className="text-lg font-semibold">Sales Overview</h3>
+              <h3 className="text-lg font-semibold">{t('salesOverview')}</h3>
               <p className="text-sm text-muted-foreground">{formatDateRange()}</p>
             </div>
             <div className="flex gap-2">
@@ -280,13 +284,12 @@ export default function Reports() {
                 onValueChange={setDateRange}
               >
                 <SelectTrigger className="w-[150px]">
-                  <SelectValue placeholder="Select period" />
+                  <SelectValue placeholder={t('selectPeriod')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="week">Last 7 days</SelectItem>
-                  <SelectItem value="month">This month</SelectItem>
-                  <SelectItem value="quarter">Last 90 days</SelectItem>
-                  <SelectItem value="year">This year</SelectItem>
+                  <SelectItem value="7">{t('last7Days')}</SelectItem>
+                  <SelectItem value="30">{t('last30Days')}</SelectItem>
+                  <SelectItem value="90">{t('last90Days')}</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -300,7 +303,7 @@ export default function Reports() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Total Sales
+                  {t('totalSales')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -315,7 +318,7 @@ export default function Reports() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Average Order Value
+                  {t('averageOrderValue')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -330,7 +333,7 @@ export default function Reports() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Total Transactions
+                  {t('totalTransactions')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -346,8 +349,8 @@ export default function Reports() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <Card className="lg:col-span-2">
               <CardHeader>
-                <CardTitle>Daily Sales</CardTitle>
-                <CardDescription>Sales trend for the selected period</CardDescription>
+                <CardTitle>{t('dailySales')}</CardTitle>
+                <CardDescription>{t('salesTrendForSelectedPeriod')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="h-[300px]">
@@ -393,8 +396,8 @@ export default function Reports() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Sales by Category</CardTitle>
-                <CardDescription>Distribution of sales by category</CardDescription>
+                <CardTitle>{t('salesByCategory')}</CardTitle>
+                <CardDescription>{t('distributionOfSalesByCategory')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="h-[300px]">
@@ -434,8 +437,8 @@ export default function Reports() {
 
           <Card className="mt-6">
             <CardHeader>
-              <CardTitle>Top Selling Products</CardTitle>
-              <CardDescription>Products with the highest sales in the selected period</CardDescription>
+              <CardTitle>{t('topSellingProducts')}</CardTitle>
+              <CardDescription>{t('productsWithTheHighestSalesInTheSelectedPeriod')}</CardDescription>
             </CardHeader>
             <CardContent>
               <DataTable
@@ -450,8 +453,8 @@ export default function Reports() {
         <TabsContent value="gst">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
             <div>
-              <h3 className="text-lg font-semibold">GST Reports</h3>
-              <p className="text-sm text-muted-foreground">GSTR-1 Reports for tax filing</p>
+              <h3 className="text-lg font-semibold">{t('gstReports')}</h3>
+              <p className="text-sm text-muted-foreground">{t('gstr1ReportsForTaxFiling')}</p>
             </div>
             <div className="flex gap-2">
               <Select
@@ -477,7 +480,7 @@ export default function Reports() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Taxable Amount
+                  {t('taxableAmount')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -510,7 +513,7 @@ export default function Reports() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Total Tax
+                  {t('totalTax')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -521,8 +524,8 @@ export default function Reports() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Monthly GST Summary</CardTitle>
-              <CardDescription>GST details for the past 3 months</CardDescription>
+              <CardTitle>{t('monthlyGstSummary')}</CardTitle>
+              <CardDescription>{t('gstDetailsForThePast3Months')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-[300px] mb-6">
@@ -570,12 +573,12 @@ export default function Reports() {
 
           <div className="mt-6 flex gap-4 flex-wrap">
             <Button className="flex items-center" onClick={() => downloadReport("gstr1")}>
-              <FileText className="h-4 w-4 mr-2" /> Generate GSTR-1 Report
+              <FileText className="h-4 w-4 mr-2" /> {t('generateGstr1Report')}
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
 
             <Button variant="outline" className="flex items-center" onClick={() => downloadReport("gstr3b")}>
-              <FileText className="h-4 w-4 mr-2" /> Generate GSTR-3B Report
+              <FileText className="h-4 w-4 mr-2" /> {t('generateGstr3bReport')}
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           </div>
@@ -585,8 +588,8 @@ export default function Reports() {
         <TabsContent value="inventory">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
             <div>
-              <h3 className="text-lg font-semibold">Inventory Reports</h3>
-              <p className="text-sm text-muted-foreground">Stock movement and valuation reports</p>
+              <h3 className="text-lg font-semibold">{t('inventoryReports')}</h3>
+              <p className="text-sm text-muted-foreground">{t('stockMovementAndValuationReports')}</p>
             </div>
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => downloadReport("inventory")}>
@@ -599,7 +602,7 @@ export default function Reports() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Total Products
+                  {t('totalProducts')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -610,7 +613,7 @@ export default function Reports() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Low Stock Items
+                  {t('lowStockItems')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -621,7 +624,7 @@ export default function Reports() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Out of Stock
+                  {t('outOfStock')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -632,7 +635,7 @@ export default function Reports() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Expiring Soon
+                  {t('expiringSoon')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -644,8 +647,8 @@ export default function Reports() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Stock Valuation</CardTitle>
-                <CardDescription>Current inventory value by category</CardDescription>
+                <CardTitle>{t('stockValuation')}</CardTitle>
+                <CardDescription>{t('currentInventoryValueByCategory')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="h-[300px]">
@@ -688,15 +691,15 @@ export default function Reports() {
                   </ResponsiveContainer>
                 </div>
                 <div className="text-center text-sm text-muted-foreground mt-4">
-                  <p>Total Inventory Value: <span className="font-bold">₹1,35,000</span></p>
+                  <p>{t('totalInventoryValue')}: <span className="font-bold">₹1,35,000</span></p>
                 </div>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle>Stock Movement</CardTitle>
-                <CardDescription>Inventory transactions in the last 30 days</CardDescription>
+                <CardTitle>{t('stockMovement')}</CardTitle>
+                <CardDescription>{t('inventoryTransactionsInTheLast30Days')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="h-[300px]">
@@ -793,7 +796,7 @@ export default function Reports() {
                 }
               }}
             >
-              <BarChart2 className="h-4 w-4 mr-2" /> Stock Adjustment Report
+              <BarChart2 className="h-4 w-4 mr-2" /> {t('stockAdjustmentReport')}
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
 
@@ -830,7 +833,7 @@ export default function Reports() {
                 }
               }}
             >
-              <BarChart2 className="h-4 w-4 mr-2" /> Expiry Report
+              <BarChart2 className="h-4 w-4 mr-2" /> {t('expiryReport')}
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           </div>

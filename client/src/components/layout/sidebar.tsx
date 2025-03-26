@@ -17,6 +17,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useTranslate } from "@/hooks/use-translate";
 
 interface SidebarProps {
   user: User;
@@ -50,6 +51,7 @@ export function Sidebar({ user }: SidebarProps) {
   const [location] = useLocation();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
+  const t = useTranslate();
 
   const currentPath = location || "/dashboard";
 
@@ -58,14 +60,14 @@ export function Sidebar({ user }: SidebarProps) {
       await logout();
       window.location.href = "/login";
       toast({
-        title: "Logged out successfully",
-        description: "You have been logged out of your account",
+        title: t('logoutSuccess'),
+        description: t('logoutDescription'),
       });
     } catch (error) {
       toast({
         variant: "destructive",
-        title: "Logout failed",
-        description: "An error occurred while logging out",
+        title: t('logoutError'),
+        description: t('logoutErrorDescription'),
       });
     }
   };
@@ -92,43 +94,43 @@ export function Sidebar({ user }: SidebarProps) {
           </svg>
           <h1 className="text-xl font-bold text-primary">MediTrack</h1>
         </div>
-        <p className="text-xs text-muted-foreground mt-1">Medical Billing System</p>
+        <p className="text-xs text-muted-foreground mt-1">{t('appDescription')}</p>
       </div>
       
       <div className="flex-1 px-4 py-2 space-y-1">
         <NavItem
           icon={<LayoutDashboard className="h-5 w-5" />}
-          label="Dashboard"
+          label={t('dashboard')}
           href="/dashboard"
           active={currentPath === "/dashboard" || currentPath === "/"}
         />
         <NavItem
           icon={<ShoppingCart className="h-5 w-5" />}
-          label="Point of Sale"
+          label={t('pointOfSale')}
           href="/pos"
           active={currentPath === "/pos"}
         />
         <NavItem
           icon={<Package2 className="h-5 w-5" />}
-          label="Inventory"
+          label={t('inventory')}
           href="/inventory"
           active={currentPath === "/inventory"}
         />
         <NavItem
           icon={<Users className="h-5 w-5" />}
-          label="Patients"
+          label={t('patients')}
           href="/patients"
           active={currentPath === "/patients"}
         />
         <NavItem
           icon={<BarChart2 className="h-5 w-5" />}
-          label="Reports"
+          label={t('reports')}
           href="/reports"
           active={currentPath === "/reports"}
         />
         <NavItem
           icon={<Settings className="h-5 w-5" />}
-          label="Settings"
+          label={t('settings')}
           href="/settings"
           active={currentPath === "/settings"}
         />
@@ -143,7 +145,7 @@ export function Sidebar({ user }: SidebarProps) {
           </Avatar>
           <div className="ml-3">
             <p className="text-sm font-medium">{user.name}</p>
-            <p className="text-xs text-muted-foreground capitalize">{user.role}</p>
+            <p className="text-xs text-muted-foreground capitalize">{t(user.role)}</p>
           </div>
           <div className="ml-auto">
             <Button variant="ghost" size="icon" onClick={handleLogout}>

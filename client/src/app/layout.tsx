@@ -11,12 +11,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head />
       <body>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
+        <ThemeProvider defaultTheme="system">
           <LanguageProvider>
             {children}
             <Toaster />

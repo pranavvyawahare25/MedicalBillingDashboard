@@ -9,6 +9,7 @@ import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis } from "recharts";
 import { Search } from '../components/Search';
 import { SearchResult } from '@shared/services/search';
 import { useLocation } from "wouter";
+import { useTranslate } from "@/hooks/use-translate";
 
 // Chart colors
 const CHART_COLORS = {
@@ -28,6 +29,7 @@ export default function Dashboard() {
   const [dailySalesData, setDailySalesData] = useState<any[]>([]);
   const [searchResults, setSearchResults] = useState<SearchResult | null>(null);
   const [, setLocation] = useLocation();
+  const t = useTranslate();
 
   // Fetch low stock medicines
   const { data: lowStockMedicines = [] } = useQuery({
@@ -167,7 +169,7 @@ export default function Dashboard() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Medical Billing Dashboard</h1>
+      <h1 className="text-3xl font-bold mb-8">{t('dashboardTitle')}</h1>
       
       <Search onSearch={handleSearch} />
 
@@ -217,13 +219,14 @@ export default function Dashboard() {
         </div>
       )}
 
-      <div className="p-4 md:p-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+      <div className="mt-8 space-y-6">
+        {/* Sales Overview Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Daily Sales Card */}
           <StatsCard
-            title="Daily Sales"
+            title={t('dailySales')}
             value={`₹${todaySales.toLocaleString()}`}
-            description={`${todayTransactions} transactions today`}
+            description={`${todayTransactions} ${t('transactionsToday')}`}
             change={salesChange}
             onClick={() => handleCardClick('sales')}
           >
@@ -263,11 +266,11 @@ export default function Dashboard() {
             </div>
           </StatsCard>
           
-          {/* Low Stock Card */}
+          {/* Low Stock Alert Card */}
           <AlertCard
-            title="Low Stock Alert"
+            title={t('lowStock')}
             count={lowStockMedicines.length}
-            description="Requiring immediate restock"
+            description={t('requiresRestock')}
             items={lowStockItems}
             icon="alert"
             onClick={() => handleCardClick('inventory')}
@@ -275,9 +278,9 @@ export default function Dashboard() {
           
           {/* Expiry Alert Card */}
           <AlertCard
-            title="Expiry Alert"
+            title={t('expiryAlert')}
             count={expiringMedicines.length}
-            description="Expiring within 30 days"
+            description={t('expiringWithinDays')}
             items={expiringItems}
             icon="calendar"
             onClick={() => handleCardClick('inventory')}

@@ -14,13 +14,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Trash2, Save, Printer, Search } from "lucide-react";
+import { Trash2, Save, Printer, Search, Loader2 } from "lucide-react";
 import { MedicineItem } from "./medicine-card";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { generateInvoicePDF } from "@/lib/utils/invoice";
+import { useTranslate } from "@/hooks/use-translate";
 
 export interface CartItem {
   medicineId: number;
@@ -51,6 +52,7 @@ export function Cart({
 }: CartProps) {
   const [customerPhone, setCustomerPhone] = useState("");
   const [searchingCustomer, setSearchingCustomer] = useState(false);
+  const t = useTranslate();
 
   // Customer search form
   const form = useForm({
@@ -94,12 +96,12 @@ export function Cart({
   });
 
   // Update form with customer data if found
-  useState(() => {
+  useEffect(() => {
     if (customer) {
       form.setValue("name", customer.name);
       form.setValue("phone", customer.phone);
     }
-  });
+  }, [customer, form]);
 
   const findCustomer = () => {
     setSearchingCustomer(true);
@@ -134,137 +136,43 @@ export function Cart({
   };
 
   return (
-    <div className="h-full flex flex-col">
-      <CardHeader className="px-4 py-4 border-b">
-        <CardTitle className="text-lg">Current Bill</CardTitle>
-        <div className="flex items-center justify-between mt-2">
-          <div className="flex items-center">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-4 w-4 text-primary mr-2"
-            >
-              <circle cx="8" cy="21" r="1" />
-              <circle cx="19" cy="21" r="1" />
-              <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
-            </svg>
-            <span className="text-sm text-muted-foreground">
-              Items: <span>{items.length}</span>
-            </span>
-          </div>
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex justify-between items-center">
+          <span>{t("pos.cart")}</span>
           <Button
-            variant="destructive"
+            variant="ghost"
             size="sm"
+            className="text-destructive"
             onClick={onClearCart}
-            disabled={items.length === 0}
           >
-            <Trash2 className="h-4 w-4 mr-1" /> Clear All
+            {t("pos.clear")}
           </Button>
-        </div>
+        </CardTitle>
       </CardHeader>
-
-      <Card className="border-0 shadow-none rounded-none">
-        <CardHeader className="px-4 py-4 border-b">
-          <div className="flex justify-between items-center mb-3">
-            <h4 className="font-medium">Customer Information</h4>
-            <Button
-              variant="link"
-              size="sm"
-              className="h-auto p-0 text-xs"
-              onClick={findCustomer}
-            >
-              <Search className="h-3 w-3 mr-1" /> Find
-            </Button>
-          </div>
-          <Form {...form}>
-            <div className="space-y-2">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Input placeholder="Customer Name" {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Input
-                        placeholder="Mobile Number"
-                        {...field}
-                        value={customerPhone || field.value}
-                        onChange={(e) => {
-                          field.onChange(e);
-                          setCustomerPhone(e.target.value);
-                          setSearchingCustomer(false);
-                        }}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="doctorId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select Doctor" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">None</SelectItem>
-                          {doctors?.map((doctor: any) => (
-                            <SelectItem key={doctor.id} value={doctor.id.toString()}>
-                              Dr. {doctor.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                  </FormItem>
-                )}
+      <CardContent>
+        <div className="space-y-4">
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <Input
+                placeholder={t("pos.customerPhone")}
+                value={customerPhone}
+                onChange={(e) => setCustomerPhone(e.target.value)}
               />
             </div>
-          </Form>
-        </CardHeader>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={findCustomer}
+              title={t("pos.searchCustomer")}
+            >
+              <Search className="h-4 w-4" />
+            </Button>
+          </div>
 
-        <CardContent className="flex-1 overflow-y-auto p-4">
           {items.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-center p-4">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-12 w-12 text-muted-foreground mb-4 opacity-20"
-              >
-                <circle cx="8" cy="21" r="1" />
-                <circle cx="19" cy="21" r="1" />
-                <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
-              </svg>
-              <p className="text-muted-foreground">Your cart is empty</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Add medicines from the left panel
-              </p>
+            <div className="text-center py-8 text-muted-foreground">
+              {t("pos.emptyCart")}
             </div>
           ) : (
             <div className="space-y-2">
@@ -299,55 +207,52 @@ export function Cart({
                       size="icon"
                       className="h-8 w-8 text-destructive"
                       onClick={() => onRemoveItem(item.medicineId)}
+                      title={t("common.delete")}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
               ))}
+
+              <div className="space-y-2 pt-4">
+                <div className="flex justify-between text-sm">
+                  <span>{t("pos.total")}</span>
+                  <span>₹{subtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>{t("pos.gst")}</span>
+                  <span>₹{gstAmount.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between font-medium">
+                  <span>{t("pos.grandTotal")}</span>
+                  <span>₹{total.toFixed(2)}</span>
+                </div>
+              </div>
             </div>
           )}
-        </CardContent>
-
-        <CardFooter className="flex-col border-t p-4">
-          <div className="w-full space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Subtotal:</span>
-              <span className="font-medium">₹{subtotal.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">GST (18%):</span>
-              <span className="font-medium">₹{gstAmount.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between text-base font-semibold mt-2 pt-2 border-t">
-              <span>Grand Total:</span>
-              <span className="text-primary">₹{total.toFixed(2)}</span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2 w-full mt-4">
-            <Button variant="outline" disabled={items.length === 0 || loading}>
-              <Save className="h-4 w-4 mr-2" /> Save Bill
-            </Button>
-            <Button
-              onClick={handleGenerateInvoice}
-              disabled={items.length === 0 || loading}
-            >
-              {loading ? (
-                <>
-                  <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-background border-t-transparent"></div>
-                  Processing...
-                </>
-              ) : (
-                <>
-                  <Printer className="h-4 w-4 mr-2" /> Print Bill
-                </>
-              )}
-            </Button>
-          </div>
-        </CardFooter>
-      </Card>
-    </div>
+        </div>
+      </CardContent>
+      <CardFooter>
+        <Button
+          className="w-full"
+          onClick={handleGenerateInvoice}
+          disabled={items.length === 0 || loading}
+        >
+          {loading ? (
+            <span className="flex items-center">
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              {t("pos.generating")}
+            </span>
+          ) : (
+            <span className="flex items-center">
+              <Printer className="mr-2 h-4 w-4" />
+              {t("pos.generateInvoice")}
+            </span>
+          )}
+        </Button>
+      </CardFooter>
+    </Card>
   );
 }
 

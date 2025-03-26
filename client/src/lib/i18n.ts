@@ -1,5 +1,8 @@
+import { useLanguage } from "@/contexts/language-context";
 
-const translations = {
+type TranslationValue = string | { [key: string]: TranslationValue };
+
+const translations: Record<'en' | 'hi' | 'mr' | 'ta', { common: { [key: string]: string } }> = {
   en: {
     common: {
       save: "Save",
@@ -18,6 +21,15 @@ const translations = {
       add: "जोड़ें",
     }
   },
+  mr: {
+    common: {
+      save: "जतन करा",
+      cancel: "रद्द करा",
+      delete: "हटवा",
+      edit: "संपादित करा",
+      add: "जोडा",
+    }
+  },
   ta: {
     common: {
       save: "சேமி",
@@ -26,31 +38,26 @@ const translations = {
       edit: "திருத்து",
       add: "சேர்",
     }
-  },
-  te: {
-    common: {
-      save: "సేవ్",
-      cancel: "రద్దు",
-      delete: "తొలగించు",
-      edit: "సవరించు",
-      add: "జోడించు",
+  }
+};
+
+export const useTranslation = () => {
+  const { currentLanguage } = useLanguage();
+
+  const t = (key: string): string => {
+    const keys = key.split('.');
+    let value: any = translations[currentLanguage.code as keyof typeof translations];
+    
+    for (const k of keys) {
+      if (value && typeof value === 'object') {
+        value = value[k];
+      } else {
+        return key;
+      }
     }
-  }
-};
+    
+    return typeof value === 'string' ? value : key;
+  };
 
-let currentLanguage = 'en';
-
-export const setLanguage = (lang: 'en' | 'hi' | 'ta' | 'te') => {
-  currentLanguage = lang;
-};
-
-export const t = (key: string) => {
-  const keys = key.split('.');
-  let value = translations[currentLanguage as keyof typeof translations];
-  
-  for (const k of keys) {
-    value = value?.[k as keyof typeof value];
-  }
-  
-  return value || key;
+  return t;
 };

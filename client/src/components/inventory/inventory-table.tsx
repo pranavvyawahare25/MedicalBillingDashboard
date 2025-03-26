@@ -100,7 +100,7 @@ export function InventoryTable({ medicines, categories, onUpdate }: InventoryTab
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isStockDialogOpen, setIsStockDialogOpen] = useState(false);
   const { toast } = useToast();
-  const { t } = useTranslate();
+  const t = useTranslate();
 
   // Form for adding/editing medicine
   const form = useForm<MedicineFormValues>({

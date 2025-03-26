@@ -54,6 +54,7 @@ import { useLanguage } from "@/contexts/language-context";
 import { supportedLanguages } from "@/config/languages";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
+import { useTranslate } from "@/hooks/use-translate";
 
 // Schema for adding a new user
 const userSchema = z.object({
@@ -93,6 +94,7 @@ export default function Settings() {
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
   const { currentLanguage, setLanguage } = useLanguage();
+  const t = useTranslate();
 
   // User form
   const userForm = useForm<UserFormValues>({
@@ -364,29 +366,20 @@ export default function Settings() {
   ];
 
   return (
-    <div className="p-4 md:p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Settings</h2>
-          <p className="text-sm text-muted-foreground">
-            Manage your application preferences
-          </p>
-        </div>
-      </div>
-
+    <div className="container mx-auto py-6">
       <Tabs defaultValue="general">
         <TabsList>
-          <TabsTrigger value="general">General</TabsTrigger>
-          <TabsTrigger value="users">Users</TabsTrigger>
-          <TabsTrigger value="doctors">Doctors</TabsTrigger>
+          <TabsTrigger value="general">{t('general')}</TabsTrigger>
+          <TabsTrigger value="users">{t('users')}</TabsTrigger>
+          <TabsTrigger value="doctors">{t('doctors')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="general" className="space-y-6">
           {/* Language Settings */}
           <Card>
             <CardHeader>
-              <CardTitle>Language Settings</CardTitle>
-              <CardDescription>Choose your preferred language for the interface</CardDescription>
+              <CardTitle>{t('language')}</CardTitle>
+              <CardDescription>{t('languageDescription')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <RadioGroup
@@ -405,7 +398,7 @@ export default function Settings() {
                 ))}
               </RadioGroup>
               <p className="text-sm text-muted-foreground mt-4">
-                Note: Changing the language will affect the entire application interface
+                {t('languageNote')}
               </p>
             </CardContent>
           </Card>
@@ -415,149 +408,38 @@ export default function Settings() {
           {/* Theme Settings */}
           <Card>
             <CardHeader>
-              <CardTitle>Theme Settings</CardTitle>
-              <CardDescription>Customize the appearance of the application</CardDescription>
+              <CardTitle>{t('theme')}</CardTitle>
+              <CardDescription>{t('themeDescription')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Theme</Label>
+                  <Label>{t('theme')}</Label>
                   <div className="flex flex-col xs:flex-row gap-2">
                     <Button
                       variant={theme === "light" ? "default" : "outline"}
                       className="w-full xs:w-auto"
                       onClick={() => setTheme("light")}
                     >
-                      <Sun className="h-4 w-4 mr-2" /> Light
+                      <Sun className="h-4 w-4 mr-2" /> {t('light')}
                     </Button>
                     <Button
                       variant={theme === "dark" ? "default" : "outline"}
                       className="w-full xs:w-auto"
                       onClick={() => setTheme("dark")}
                     >
-                      <Moon className="h-4 w-4 mr-2" /> Dark
+                      <Moon className="h-4 w-4 mr-2" /> {t('dark')}
                     </Button>
                     <Button
                       variant={theme === "system" ? "default" : "outline"}
                       className="w-full xs:w-auto"
                       onClick={() => setTheme("system")}
                     >
-                      <Laptop className="h-4 w-4 mr-2" /> System
+                      <Laptop className="h-4 w-4 mr-2" /> {t('system')}
                     </Button>
                   </div>
                 </div>
-                
-                <div className="space-y-2">
-                  <Label>Language</Label>
-                  <Select defaultValue="en">
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select language" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="en">English</SelectItem>
-                      <SelectItem value="hi">Hindi</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <Switch id="enable-animations" defaultChecked />
-                  <Label htmlFor="enable-animations">Enable animations</Label>
-                </div>
               </div>
-            </CardContent>
-          </Card>
-
-          <Separator />
-
-          {/* Store Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Store Settings</CardTitle>
-              <CardDescription>Update your store information</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Form {...storeSettingsForm}>
-                <form onSubmit={storeSettingsForm.handleSubmit(onSaveStoreSettings)} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={storeSettingsForm.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Store Name</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={storeSettingsForm.control}
-                      name="gstNumber"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>GST Number</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  
-                  <FormField
-                    control={storeSettingsForm.control}
-                    name="address"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Address</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={storeSettingsForm.control}
-                      name="phone"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Phone Number</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={storeSettingsForm.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email Address</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  
-                  <div className="flex justify-end">
-                    <Button type="submit">Save Settings</Button>
-                  </div>
-                </form>
-              </Form>
             </CardContent>
           </Card>
         </TabsContent>
@@ -567,11 +449,11 @@ export default function Settings() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
-                <CardTitle>Users</CardTitle>
-                <CardDescription>Manage user accounts and roles</CardDescription>
+                <CardTitle>{t('users')}</CardTitle>
+                <CardDescription>{t('userManagement')}</CardDescription>
               </div>
               <Button onClick={() => setIsAddUserDialogOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" /> Add User
+                <Plus className="h-4 w-4 mr-2" /> {t('add')} {t('user')}
               </Button>
             </CardHeader>
             <CardContent>
@@ -588,11 +470,11 @@ export default function Settings() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
-                <CardTitle>Doctors</CardTitle>
-                <CardDescription>Manage doctor information</CardDescription>
+                <CardTitle>{t('doctors')}</CardTitle>
+                <CardDescription>{t('doctorManagement')}</CardDescription>
               </div>
               <Button onClick={() => setIsAddDoctorDialogOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" /> Add Doctor
+                <Plus className="h-4 w-4 mr-2" /> {t('add')} {t('doctor')}
               </Button>
             </CardHeader>
             <CardContent>
@@ -609,9 +491,9 @@ export default function Settings() {
       <Dialog open={isAddUserDialogOpen} onOpenChange={setIsAddUserDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Add New User</DialogTitle>
+            <DialogTitle>{t('add')} {t('new')} {t('user')}</DialogTitle>
             <DialogDescription>
-              Create a new user account with specific role permissions.
+              {t('createNewUser')}
             </DialogDescription>
           </DialogHeader>
           <Form {...userForm}>
@@ -621,9 +503,9 @@ export default function Settings() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Full Name</FormLabel>
+                    <FormLabel>{t('fullName')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter full name" {...field} />
+                      <Input placeholder={t('enterFullName')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -635,9 +517,9 @@ export default function Settings() {
                 name="username"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Username</FormLabel>
+                    <FormLabel>{t('username')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter username" {...field} />
+                      <Input placeholder={t('enterUsername')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -649,9 +531,9 @@ export default function Settings() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel>{t('password')}</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="Enter password" {...field} />
+                      <Input type="password" placeholder={t('enterPassword')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -663,33 +545,33 @@ export default function Settings() {
                 name="role"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Role</FormLabel>
+                    <FormLabel>{t('role')}</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select role" />
+                          <SelectValue placeholder={t('selectRole')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="admin">
                           <div className="flex items-center">
                             <Shield className="h-4 w-4 mr-2 text-blue-500" />
-                            Admin
+                            {t('admin')}
                           </div>
                         </SelectItem>
                         <SelectItem value="pharmacist">
                           <div className="flex items-center">
                             <User className="h-4 w-4 mr-2 text-green-500" />
-                            Pharmacist
+                            {t('pharmacist')}
                           </div>
                         </SelectItem>
                         <SelectItem value="accountant">
                           <div className="flex items-center">
                             <Store className="h-4 w-4 mr-2 text-purple-500" />
-                            Accountant
+                            {t('accountant')}
                           </div>
                         </SelectItem>
                       </SelectContent>
@@ -700,7 +582,7 @@ export default function Settings() {
               />
               
               <DialogFooter>
-                <Button type="submit">Add User</Button>
+                <Button type="submit">{t('add')} {t('user')}</Button>
               </DialogFooter>
             </form>
           </Form>
@@ -711,9 +593,9 @@ export default function Settings() {
       <Dialog open={isEditUserDialogOpen} onOpenChange={setIsEditUserDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Edit User</DialogTitle>
+            <DialogTitle>{t('edit')} {t('user')}</DialogTitle>
             <DialogDescription>
-              Update user account details and permissions.
+              {t('updateUserDetails')}
             </DialogDescription>
           </DialogHeader>
           <Form {...userForm}>
@@ -723,9 +605,9 @@ export default function Settings() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Full Name</FormLabel>
+                    <FormLabel>{t('fullName')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter full name" {...field} />
+                      <Input placeholder={t('enterFullName')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -737,9 +619,9 @@ export default function Settings() {
                 name="username"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Username</FormLabel>
+                    <FormLabel>{t('username')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter username" {...field} />
+                      <Input placeholder={t('enterUsername')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -751,11 +633,11 @@ export default function Settings() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel>{t('password')}</FormLabel>
                     <FormControl>
                       <Input 
                         type="password" 
-                        placeholder="Leave blank to keep current password" 
+                        placeholder={t('leaveBlankForCurrentPassword')} 
                         {...field} 
                       />
                     </FormControl>
@@ -769,33 +651,33 @@ export default function Settings() {
                 name="role"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Role</FormLabel>
+                    <FormLabel>{t('role')}</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select role" />
+                          <SelectValue placeholder={t('selectRole')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="admin">
                           <div className="flex items-center">
                             <Shield className="h-4 w-4 mr-2 text-blue-500" />
-                            Admin
+                            {t('admin')}
                           </div>
                         </SelectItem>
                         <SelectItem value="pharmacist">
                           <div className="flex items-center">
                             <User className="h-4 w-4 mr-2 text-green-500" />
-                            Pharmacist
+                            {t('pharmacist')}
                           </div>
                         </SelectItem>
                         <SelectItem value="accountant">
                           <div className="flex items-center">
                             <Store className="h-4 w-4 mr-2 text-purple-500" />
-                            Accountant
+                            {t('accountant')}
                           </div>
                         </SelectItem>
                       </SelectContent>
@@ -806,7 +688,7 @@ export default function Settings() {
               />
               
               <DialogFooter>
-                <Button type="submit">Update User</Button>
+                <Button type="submit">{t('update')} {t('user')}</Button>
               </DialogFooter>
             </form>
           </Form>
@@ -817,9 +699,9 @@ export default function Settings() {
       <Dialog open={isAddDoctorDialogOpen} onOpenChange={setIsAddDoctorDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Add New Doctor</DialogTitle>
+            <DialogTitle>{t('add')} {t('new')} {t('doctor')}</DialogTitle>
             <DialogDescription>
-              Add a doctor to refer to in prescriptions and bills.
+              {t('addDoctorDescription')}
             </DialogDescription>
           </DialogHeader>
           <Form {...doctorForm}>
@@ -829,9 +711,9 @@ export default function Settings() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Doctor Name</FormLabel>
+                    <FormLabel>{t('doctorName')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter doctor's name" {...field} />
+                      <Input placeholder={t('enterDoctorName')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -843,9 +725,9 @@ export default function Settings() {
                 name="specialization"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Specialization (Optional)</FormLabel>
+                    <FormLabel>{t('specialization')} ({t('optional')})</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter specialization" {...field} />
+                      <Input placeholder={t('enterSpecialization')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -857,9 +739,9 @@ export default function Settings() {
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Phone Number</FormLabel>
+                    <FormLabel>{t('phoneNumber')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter phone number" {...field} />
+                      <Input placeholder={t('enterPhoneNumber')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -867,7 +749,7 @@ export default function Settings() {
               />
               
               <DialogFooter>
-                <Button type="submit">Add Doctor</Button>
+                <Button type="submit">{t('add')} {t('doctor')}</Button>
               </DialogFooter>
             </form>
           </Form>

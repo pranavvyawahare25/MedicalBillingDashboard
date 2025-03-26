@@ -62,9 +62,9 @@ export default function POS() {
   const [isListening, setIsListening] = useState(false);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isGeneratingInvoice, setIsGeneratingInvoice] = useState(false);
+  const t = useTranslate();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-  const { t } = useTranslate();
 
   // Fetch medicines query
   const { data: medicines = [] } = useQuery({
@@ -189,8 +189,8 @@ export default function POS() {
         if (existingItem.quantity >= medicine.stock) {
           toast({
             variant: "destructive",
-            title: "Stock limit reached",
-            description: `Only ${medicine.stock} units available.`,
+            title: t("pos.stockLimit", { stock: medicine.stock.toString() }),
+            description: "",
           });
           return prev;
         }
@@ -249,8 +249,8 @@ export default function POS() {
     if (cartItems.length === 0) {
       toast({
         variant: "destructive",
-        title: "Empty cart",
-        description: "Please add items to the cart first.",
+        title: t("pos.emptyCart"),
+        description: "",
       });
       return;
     }
@@ -278,8 +278,8 @@ export default function POS() {
       if (!response.ok) throw new Error('Failed to generate invoice');
 
       toast({
-        title: "Success",
-        description: "Invoice generated successfully",
+        title: t("pos.invoiceSuccess"),
+        description: "",
       });
 
       handleClearCart();
@@ -287,8 +287,8 @@ export default function POS() {
       console.error('Invoice error:', error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Failed to generate invoice. Please try again.",
+        title: t("pos.invoiceError"),
+        description: "",
       });
     } finally {
       setIsGeneratingInvoice(false);
@@ -316,7 +316,7 @@ export default function POS() {
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             ref={searchInputRef}
-            placeholder={t("pos.searchPlaceholder") || "Search medicines..."}
+            placeholder={t("pos.searchPlaceholder")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-8 pr-4"
@@ -327,7 +327,7 @@ export default function POS() {
           size="icon"
           onClick={handleVoiceSearch}
           className={isListening ? "bg-red-500 text-white hover:bg-red-600" : ""}
-          title="Voice Search"
+          title={t("pos.voiceSearch")}
         >
           <Mic className="h-4 w-4" />
         </Button>
@@ -335,7 +335,7 @@ export default function POS() {
           variant="outline"
           size="icon"
           onClick={handleOCRScan}
-          title="Scan Prescription"
+          title={t("pos.scanPrescription")}
         >
           <Camera className="h-4 w-4" />
         </Button>
@@ -346,12 +346,12 @@ export default function POS() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Stock</TableHead>
-              <TableHead>MRP</TableHead>
-              <TableHead>GST</TableHead>
-              <TableHead className="text-right">Action</TableHead>
+              <TableHead>{t("inventory.name")}</TableHead>
+              <TableHead>{t("inventory.category")}</TableHead>
+              <TableHead>{t("inventory.stock")}</TableHead>
+              <TableHead>{t("inventory.mrp")}</TableHead>
+              <TableHead>{t("common.gst")}</TableHead>
+              <TableHead className="text-right">{t("common.actions")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -382,7 +382,7 @@ export default function POS() {
                     disabled={medicine.stock <= 0}
                   >
                     <Plus className="h-4 w-4 mr-1" />
-                    Add
+                    {t("pos.addToCart")}
                   </Button>
                 </TableCell>
               </TableRow>
@@ -390,7 +390,7 @@ export default function POS() {
             {filteredMedicines.length === 0 && searchTerm && (
               <TableRow>
                 <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                  No medicines found matching "{searchTerm}"
+                  {t("pos.noResults")} "{searchTerm}"
                 </TableCell>
               </TableRow>
             )}
