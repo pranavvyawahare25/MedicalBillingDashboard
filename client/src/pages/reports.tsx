@@ -768,30 +768,49 @@ export default function Reports() {
               className="flex items-center" 
               onClick={async () => {
                 try {
-                  const response = await fetch('/api/reports/stock-adjustment');
+                  const response = await fetch('/api/reports/stock-adjustment', {
+                    credentials: 'include'
+                  });
+                  
+                  if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to fetch stock adjustment data');
+                  }
+                  
                   const data = await response.json();
-                  const csv = [
+                  
+                  // Create CSV content
+                  const csvContent = [
                     ['Medicine', 'Old Stock', 'New Stock', 'Reason', 'Date'].join(','),
                     ...data.map((row: any) => [
-                      row.medicine,
+                      `"${row.medicine}"`,
                       row.oldStock,
                       row.newStock,
-                      row.reason,
+                      `"${row.reason}"`,
                       new Date(row.date).toLocaleDateString()
                     ].join(','))
                   ].join('\n');
                   
-                  const blob = new Blob([csv], { type: 'text/csv' });
+                  // Create and trigger download
+                  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                   const url = window.URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = `stock-adjustment-report-${new Date().toISOString().split('T')[0]}.csv`;
-                  a.click();
-                } catch (error) {
+                  const link = document.createElement('a');
+                  link.setAttribute('href', url);
+                  link.setAttribute('download', `stock-adjustment-report-${new Date().toISOString().split('T')[0]}.csv`);
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                  
                   toast({
-                    title: "Error",
-                    description: "Failed to generate report",
-                    variant: "destructive"
+                    title: t('success'),
+                    description: t('downloadSuccess'),
+                  });
+                } catch (error) {
+                  console.error('Error downloading stock adjustment report:', error);
+                  toast({
+                    variant: "destructive",
+                    title: t('error'),
+                    description: t('downloadError'),
                   });
                 }
               }}

@@ -16,6 +16,7 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  getUsers(): Promise<User[]>;
   
   // Category methods
   getCategories(): Promise<Category[]>;
@@ -78,6 +79,10 @@ export class DatabaseStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     const [user] = await db.insert(users).values(insertUser).returning();
     return user;
+  }
+  
+  async getUsers(): Promise<User[]> {
+    return await db.select().from(users);
   }
   
   // Category methods
@@ -370,123 +375,86 @@ export class MemStorage implements IStorage {
 
   // Seed initial data
   private seedData() {
-    // Add default admin user
-    this.createUser({
+    // Seed users
+    const adminUser: User = {
+      id: 1,
       username: "admin",
-      password: "admin123",
-      name: "Administrator",
-      role: "admin"
-    });
-    
-    // Add some categories
-    const categories = [
-      "Pain Relief",
-      "Antibiotics",
-      "Antiallergic",
-      "Antidiabetic",
-      "Supplements",
-      "Cold & Cough"
-    ];
-    
-    categories.forEach(name => this.createCategory({ name }));
-    
-    // Add some medicines
-    const medicines = [
-      {
-        name: "Paracetamol 500mg",
-        description: "Tablet (Strip of 10)",
+      password: "admin",
+      name: "Admin User",
+      role: "admin",
+      createdAt: new Date()
+    };
+    this.users.set(adminUser.id, adminUser);
+
+    // Seed categories
+    const tabletCategory: Category = {
+      id: 1,
+      name: "Tablets"
+    };
+    this.categories.set(tabletCategory.id, tabletCategory);
+
+    // Seed medicines
+    const paracetamol: Medicine = {
+      id: 1,
+      name: "Paracetamol",
+      description: null,
         category_id: 1,
         form: "tablet",
-        batchNumber: "B2023056",
+      batchNumber: "BATCH001",
         expiryDate: new Date("2024-12-31"),
-        mrp: "25",
-        stock: 235,
+      mrp: "10.00",
+      stock: 100,
         lowStockThreshold: 20,
-        gstRate: "18"
-      },
-      {
-        name: "Azithromycin 500mg",
-        description: "Tablet (Strip of 6)",
-        category_id: 2,
-        form: "tablet",
-        batchNumber: "B2023042",
-        expiryDate: new Date("2024-10-31"),
-        mrp: "90",
-        stock: 186,
-        lowStockThreshold: 20,
-        gstRate: "18"
-      },
-      {
-        name: "Cetirizine 10mg",
-        description: "Tablet (Strip of 10)",
-        category_id: 3,
-        form: "tablet",
-        batchNumber: "B2023089",
-        expiryDate: new Date("2024-11-30"),
-        mrp: "30",
-        stock: 3,
-        lowStockThreshold: 10,
-        gstRate: "18"
-      },
-      {
-        name: "Amoxicillin 250mg",
-        description: "Capsule (Strip of 10)",
-        category_id: 2,
-        form: "capsule",
-        batchNumber: "B2023016",
-        expiryDate: new Date("2024-01-31"),
-        mrp: "80",
-        stock: 12,
-        lowStockThreshold: 15,
-        gstRate: "18"
-      },
-      {
-        name: "Multivitamin",
-        description: "Tablet (Bottle of 30)",
-        category_id: 5,
-        form: "tablet",
-        batchNumber: "B2023098",
-        expiryDate: new Date("2025-03-31"),
-        mrp: "150",
-        stock: 45,
-        lowStockThreshold: 10,
-        gstRate: "18"
-      },
-      {
-        name: "Cough Syrup",
-        description: "Syrup (100ml)",
-        category_id: 6,
-        form: "syrup",
-        batchNumber: "B2023021",
-        expiryDate: new Date("2024-02-28"),
-        mrp: "85",
-        stock: 65,
-        lowStockThreshold: 15,
-        gstRate: "18"
-      }
-    ];
-    
-    medicines.forEach(medicine => this.createMedicine(medicine));
-    
-    // Add some doctors
-    const doctors = [
-      { name: "Dr. Sharma", specialization: "General Physician", phone: "9876543210" },
-      { name: "Dr. Patel", specialization: "Cardiologist", phone: "9876543211" },
-      { name: "Dr. Kumar", specialization: "Pediatrician", phone: "9876543212" },
-      { name: "Dr. Singh", specialization: "Dermatologist", phone: "9876543213" },
-      { name: "Dr. Gupta", specialization: "Orthopedic", phone: "9876543214" }
-    ];
-    
-    doctors.forEach(doctor => this.createDoctor(doctor));
-    
-    // Add some customers
-    const customers = [
-      { name: "Amit Kumar", phone: "9876543220", email: "amit@example.com", address: "123 Main St, Delhi" },
-      { name: "Priya Sharma", phone: "9876543221", email: "priya@example.com", address: "456 Park Ave, Mumbai" },
-      { name: "Rahul Singh", phone: "9876543222", email: "rahul@example.com", address: "789 Gandhi Rd, Bangalore" }
-    ];
-    
-    customers.forEach(customer => this.createCustomer(customer));
+      gstRate: "18",
+      createdAt: new Date()
+    };
+    this.medicines.set(paracetamol.id, paracetamol);
+
+    // Seed customers
+    const customer: Customer = {
+      id: 1,
+      name: "John Doe",
+      phone: "1234567890",
+      email: null,
+      address: null,
+      createdAt: new Date()
+    };
+    this.customers.set(customer.id, customer);
+
+    // Seed doctors
+    const doctor: Doctor = {
+      id: 1,
+      name: "Dr. Smith",
+      specialization: null,
+      phone: null,
+      createdAt: new Date()
+    };
+    this.doctors.set(doctor.id, doctor);
+
+    // Seed invoices
+    const invoice: Invoice = {
+      id: 1,
+      invoiceNumber: "INV-001",
+      customerId: null,
+      doctorId: null,
+      subtotal: "100.00",
+      gstAmount: "18.00",
+      total: "118.00",
+      userId: 1,
+      createdAt: new Date()
+    };
+    this.invoices.set(invoice.id, invoice);
+
+    // Seed prescriptions
+    const prescription: Prescription = {
+      id: 1,
+      customerId: 1,
+      doctorId: null,
+      prescriptionImagePath: null,
+      notes: null,
+      createdAt: new Date()
+    };
+    this.prescriptions.set(prescription.id, prescription);
   }
 
   // User methods
@@ -705,6 +673,10 @@ export class MemStorage implements IStorage {
     }
     
     return result;
+  }
+
+  async getUsers(): Promise<User[]> {
+    return Array.from(this.users.values());
   }
 }
 

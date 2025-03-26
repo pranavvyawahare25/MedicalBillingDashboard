@@ -1,58 +1,94 @@
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { ArrowDown, ArrowUp } from "lucide-react";
+import { ArrowUpIcon, ArrowDownIcon } from "lucide-react";
+import { useTranslate } from "@/hooks/use-translate";
+
+type ColorVariant = 'blue' | 'green' | 'purple' | 'red';
 
 interface StatsCardProps {
   title: string;
-  value: string;
-  description: string;
+  value: string | number;
   change?: number;
+  changeText?: string;
   icon?: React.ReactNode;
-  className?: string;
-  children?: React.ReactNode;
   onClick?: () => void;
+  className?: string;
+  variant?: ColorVariant;
 }
+
+const variantStyles: Record<ColorVariant, string> = {
+  blue: "bg-blue-50 dark:bg-blue-950/50",
+  green: "bg-green-50 dark:bg-green-950/50",
+  purple: "bg-purple-50 dark:bg-purple-950/50",
+  red: "bg-red-50 dark:bg-red-950/50"
+};
+
+const iconStyles: Record<ColorVariant, string> = {
+  blue: "bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400",
+  green: "bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400",
+  purple: "bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400",
+  red: "bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400"
+};
 
 export function StatsCard({
   title,
   value,
-  description,
   change,
+  changeText,
   icon,
-  className,
-  children,
   onClick,
+  className,
+  variant = 'blue'
 }: StatsCardProps) {
+  const t = useTranslate();
+  
   return (
-    <Card 
+    <Card
       className={cn(
-        "overflow-hidden transition-all duration-200 cursor-pointer hover:scale-[1.02] hover:shadow-lg hover:border-primary/50", 
+        "p-6 hover:shadow-lg transition-shadow cursor-pointer border-none",
+        variantStyles[variant],
         className
       )}
       onClick={onClick}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onClick?.();
-        }
-      }}
     >
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-lg font-semibold">{title}</h3>
-          {change !== undefined && (
-            <span className={change >= 0 ? "text-green-500" : "text-red-500"}>
-              {change >= 0 ? <ArrowUp className="h-4 w-4 inline mr-1" /> : <ArrowDown className="h-4 w-4 inline mr-1" />}
-              {Math.abs(change)}%
-            </span>
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-muted-foreground">{title}</p>
+          <h2 className="text-2xl font-bold mt-2">{value}</h2>
+          {(change !== undefined || changeText) && (
+            <p className="text-xs text-muted-foreground mt-2 flex items-center">
+              {change !== undefined && (
+                <>
+                  {change >= 0 ? (
+                    <ArrowUpIcon className="h-3 w-3 text-green-500 dark:text-green-400 mr-1" />
+                  ) : (
+                    <ArrowDownIcon className="h-3 w-3 text-red-500 dark:text-red-400 mr-1" />
+                  )}
+                  <span className={cn(
+                    change >= 0 
+                      ? "text-green-500 dark:text-green-400" 
+                      : "text-red-500 dark:text-red-400"
+                  )}>
+                    {Math.abs(change)}%
+                  </span>
+                  <span className="ml-1 text-muted-foreground">{t('dashboard.vsLastMonth')}</span>
+                </>
+              )}
+              {changeText && !change && (
+                <span className="text-muted-foreground">{changeText}</span>
+              )}
+            </p>
           )}
         </div>
-        <p className="text-3xl font-bold mb-2">{value}</p>
-        <p className="text-sm text-muted-foreground">{description}</p>
-        {children && <div className="mt-4">{children}</div>}
-      </CardContent>
+        {icon && (
+          <div className={cn(
+            "h-8 w-8 rounded-full flex items-center justify-center",
+            iconStyles[variant]
+          )}>
+            {icon}
+          </div>
+        )}
+      </div>
     </Card>
   );
 }

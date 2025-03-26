@@ -1,15 +1,14 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { StatsCard } from "@/components/dashboard/stats-card";
-import { AlertCard } from "@/components/dashboard/alert-card";
-import { TopSellingTable, TopSellingMedicine } from "@/components/dashboard/top-selling-table";
+import { TopSellingTable } from "@/components/dashboard/top-selling-table";
 import { RecentActivity } from "@/components/dashboard/recent-activity";
 import { format, subDays } from "date-fns";
-import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis } from "recharts";
 import { Search } from '../components/Search';
 import { SearchResult } from '@shared/services/search';
 import { useLocation } from "wouter";
 import { useTranslate } from "@/hooks/use-translate";
+import { IndianRupee, Package, Users, AlertTriangle } from "lucide-react";
 
 // Chart colors
 const CHART_COLORS = {
@@ -26,70 +25,9 @@ const CHART_COLORS = {
 };
 
 export default function Dashboard() {
-  const [dailySalesData, setDailySalesData] = useState<any[]>([]);
+  const [location, setLocation] = useLocation();
   const [searchResults, setSearchResults] = useState<SearchResult | null>(null);
-  const [, setLocation] = useLocation();
   const t = useTranslate();
-
-  // Fetch low stock medicines
-  const { data: lowStockMedicines = [] } = useQuery({
-    queryKey: ["/api/medicines/low-stock"],
-    queryFn: async () => {
-      const res = await fetch("/api/medicines/low-stock", {
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error("Failed to fetch low stock medicines");
-      return res.json();
-    },
-  });
-
-  // Fetch expiring medicines
-  const { data: expiringMedicines = [] } = useQuery({
-    queryKey: ["/api/medicines/expiring"],
-    queryFn: async () => {
-      const res = await fetch("/api/medicines/expiring?days=30", {
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error("Failed to fetch expiring medicines");
-      return res.json();
-    },
-  });
-
-  // Fetch top selling medicines
-  const { data: topSellingMedicines = [] } = useQuery({
-    queryKey: ["/api/analytics/top-selling"],
-    queryFn: async () => {
-      const res = await fetch("/api/analytics/top-selling?limit=5", {
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error("Failed to fetch top selling medicines");
-      return res.json();
-    },
-  });
-
-  // Fetch daily sales
-  const { data: dailySales = [] } = useQuery({
-    queryKey: ["/api/analytics/daily-sales"],
-    queryFn: async () => {
-      const res = await fetch("/api/analytics/daily-sales?days=7", {
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error("Failed to fetch daily sales");
-      return res.json();
-    },
-  });
-
-  // Format daily sales data for chart
-  useEffect(() => {
-    if (dailySales.length > 0) {
-      const formattedData = dailySales.map((item: any) => ({
-        date: format(new Date(item.date), "dd MMM"),
-        amount: item.sales,
-      })).reverse();
-      
-      setDailySalesData(formattedData);
-    }
-  }, [dailySales]);
 
   // Mock recent activity data
   const recentActivity = [
@@ -123,36 +61,61 @@ export default function Dashboard() {
     },
   ];
 
-  // Format low stock items for display
-  const lowStockItems = lowStockMedicines.slice(0, 3).map((med: any) => ({
-    id: med.id,
-    name: med.name,
-    value: `${med.stock} left`,
-    status: med.stock === 0 ? "error" : "warning",
-  }));
+  // Fetch daily sales data
+  const { data: dailySales = [] } = useQuery({
+    queryKey: ["/api/analytics/daily-sales"],
+    queryFn: async () => {
+      const res = await fetch("/api/analytics/daily-sales?days=30", {
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed to fetch daily sales");
+      return res.json();
+    },
+  });
 
-  // Format expiring items for display
-  const expiringItems = expiringMedicines.slice(0, 3).map((med: any) => {
-    const today = new Date();
-    const expiryDate = new Date(med.expiryDate);
-    const daysLeft = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-    
-    return {
-      id: med.id,
-      name: med.name,
-      value: `${daysLeft} days left`,
-      status: daysLeft <= 5 ? "error" : "warning",
-    };
+  // Fetch top selling medicines
+  const { data: topSellingMedicines = [] } = useQuery({
+    queryKey: ["/api/analytics/top-selling"],
+    queryFn: async () => {
+      const res = await fetch("/api/analytics/top-selling?limit=5", {
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed to fetch top selling medicines");
+      return res.json();
+    },
+  });
+
+  // Fetch low stock medicines
+  const { data: lowStockMedicines = [] } = useQuery({
+    queryKey: ["/api/medicines/low-stock"],
+    queryFn: async () => {
+      const res = await fetch("/api/medicines/low-stock", {
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed to fetch low stock medicines");
+      return res.json();
+    },
+  });
+
+  // Fetch expiring medicines
+  const { data: expiringMedicines = [] } = useQuery({
+    queryKey: ["/api/medicines/expiring"],
+    queryFn: async () => {
+      const res = await fetch("/api/medicines/expiring?days=30", {
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed to fetch expiring medicines");
+      return res.json();
+    },
   });
 
   // Calculate total sales for today
   const todaySales = dailySales.length > 0 ? dailySales[0].sales : 0;
-  const todayTransactions = dailySales.length > 0 ? dailySales[0].transactions : 0;
-
-  // Calculate sales change percentage (comparing today with yesterday)
-  const yesterdaySales = dailySales.length > 1 ? dailySales[1].sales : 0;
-  const salesChange = yesterdaySales > 0 
-    ? Math.round(((todaySales - yesterdaySales) / yesterdaySales) * 100) 
+  
+  // Calculate sales change percentage (comparing with last month)
+  const lastMonthSales = dailySales.length > 30 ? dailySales[30].sales : 0;
+  const salesChange = lastMonthSales > 0 
+    ? Math.round(((todaySales - lastMonthSales) / lastMonthSales) * 100) 
     : 0;
 
   const handleSearch = (results: SearchResult) => {
@@ -220,77 +183,48 @@ export default function Dashboard() {
       )}
 
       <div className="mt-8 space-y-6">
-        {/* Sales Overview Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Daily Sales Card */}
+        {/* Overview Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <StatsCard
-            title={t('dailySales')}
+            title={t('dashboard.todaySales')}
             value={`₹${todaySales.toLocaleString()}`}
-            description={`${todayTransactions} ${t('transactionsToday')}`}
             change={salesChange}
+            icon={<IndianRupee className="h-4 w-4" />}
             onClick={() => handleCardClick('sales')}
-          >
-            <div className="h-24 mt-4">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={dailySalesData}>
-                  <XAxis 
-                    dataKey="date" 
-                    tickLine={false} 
-                    axisLine={false}
-                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                    stroke="hsl(var(--muted-foreground))"
-                  />
-                  <Tooltip
-                    formatter={(value: number) => [`₹${value}`, 'Sales']}
-                    labelFormatter={(value) => `Date: ${value}`}
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--background))',
-                      border: '1px solid hsl(var(--border))',
-                      color: 'hsl(var(--foreground))',
-                      padding: '8px',
-                      borderRadius: '6px'
-                    }}
-                    labelStyle={{ color: 'hsl(var(--foreground))' }}
-                    itemStyle={{ color: 'hsl(var(--foreground))' }}
-                  />
-                  <Bar 
-                    dataKey="amount" 
-                    fill={CHART_COLORS.info}
-                    radius={[4, 4, 0, 0]} 
-                    stroke={CHART_COLORS.info}
-                    strokeWidth={1}
-                    minPointSize={3}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </StatsCard>
-          
-          {/* Low Stock Alert Card */}
-          <AlertCard
-            title={t('lowStock')}
-            count={lowStockMedicines.length}
-            description={t('requiresRestock')}
-            items={lowStockItems}
-            icon="alert"
-            onClick={() => handleCardClick('inventory')}
+            variant="blue"
           />
           
-          {/* Expiry Alert Card */}
-          <AlertCard
-            title={t('expiryAlert')}
-            count={expiringMedicines.length}
-            description={t('expiringWithinDays')}
-            items={expiringItems}
-            icon="calendar"
+          <StatsCard
+            title={t('dashboard.totalProducts')}
+            value="1,456"
+            change={3}
+            icon={<Package className="h-4 w-4" />}
             onClick={() => handleCardClick('inventory')}
+            variant="green"
+          />
+          
+          <StatsCard
+            title={t('dashboard.totalCustomers')}
+            value="892"
+            change={8}
+            icon={<Users className="h-4 w-4" />}
+            variant="purple"
+          />
+          
+          <StatsCard
+            title={t('dashboard.lowStockItems')}
+            value={lowStockMedicines.length}
+            changeText={`${expiringMedicines.length} ${t('dashboard.itemsExpiringSoon')}`}
+            icon={<AlertTriangle className="h-4 w-4" />}
+            onClick={() => handleCardClick('inventory')}
+            variant="red"
           />
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Top Selling Medicines */}
           <TopSellingTable 
-            medicines={topSellingMedicines as TopSellingMedicine[]} 
+            medicines={topSellingMedicines} 
           />
           
           {/* Recent Activity */}
